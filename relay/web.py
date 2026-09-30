@@ -25,7 +25,7 @@ from .research import search_wikipedia
 
 
 WEB_ROOT = Path(__file__).resolve().parent.parent / "web"
-BUILD_VERSION = "2026.09.29.3"
+BUILD_VERSION = "2026.09.30.1"
 MAX_ACTION_HISTORY = 2_000
 
 
@@ -62,6 +62,7 @@ class RelayWebRuntime:
         self.latest_snapshot: dict[str, Any] = self.agent.snapshot.to_dict()
         self._lock = threading.Lock()
         self._loop = asyncio.new_event_loop()
+        self._collector_task: asyncio.Task[None] | None = None
         self._thread = threading.Thread(target=self._run_loop, daemon=True)
         self._thread.start()
         asyncio.run_coroutine_threadsafe(self._start(), self._loop).result(timeout=5)
@@ -72,7 +73,7 @@ class RelayWebRuntime:
 
     async def _start(self) -> None:
         await self.agent.start()
-        asyncio.create_task(self._collect_actions())
+        self._collector_task = asyncio.create_task(self._collect_actions())
 
     def submit_text(self, text: str) -> None:
         event = InputEvent(

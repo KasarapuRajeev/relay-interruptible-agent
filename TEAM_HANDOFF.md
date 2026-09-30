@@ -6,8 +6,8 @@
 demo, report, or final submission.
 **Current development status:** Working provider-integrated MVP; approximately 75%
 of the intended hackathon submission is complete.
-**Latest dashboard build:** `2026.09.29.3`
-**Automated verification:** 82 tests passing
+**Latest dashboard build:** `2026.09.30.1`
+**Automated verification:** 83 tests passing
 
 ---
 
@@ -318,7 +318,7 @@ layer without replacing the Python runtime.
 - Agent event timeline
 - Secure PowerShell launchers
 - Safe provider error diagnostics
-- 82 automated tests
+- 83 automated tests
 
 ### Successfully demonstrated
 
@@ -609,7 +609,7 @@ http://127.0.0.1:8000
 The provider badge should show:
 
 ```text
-Gemini · 2026.09.29.3
+Gemini · 2026.09.30.1
 ```
 
 Never paste API keys into code, documentation, screenshots, Git commits, or team chat.

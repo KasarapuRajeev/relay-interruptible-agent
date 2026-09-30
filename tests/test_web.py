@@ -1,3 +1,4 @@
+import asyncio
 import http.client
 import json
 import os
@@ -119,6 +120,28 @@ class ActionRetentionTests(unittest.TestCase):
         self.assertEqual(len(actions), MAX_ACTION_HISTORY)
         self.assertEqual(actions[0]["sequence"], 7)
         self.assertEqual(cursor, total)
+
+
+class RuntimeLifecycleTests(unittest.IsolatedAsyncioTestCase):
+    async def test_action_collector_is_strongly_owned(self):
+        class BlockingAgent:
+            async def start(self):
+                return None
+
+            async def next_action(self, timeout):
+                await asyncio.Future()
+
+        runtime = RelayWebRuntime.__new__(RelayWebRuntime)
+        runtime.agent = BlockingAgent()
+        runtime._collector_task = None
+
+        await runtime._start()
+        try:
+            self.assertIsNotNone(runtime._collector_task)
+            self.assertFalse(runtime._collector_task.done())
+        finally:
+            runtime._collector_task.cancel()
+            await asyncio.gather(runtime._collector_task, return_exceptions=True)
 
 
 class ServerStartupSafetyTests(unittest.TestCase):

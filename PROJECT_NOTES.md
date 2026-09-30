@@ -185,7 +185,7 @@ harness. UI work will not be allowed to change core orchestration behavior.
 - Added a CLI that prints the same JSON actions used by the evaluation harness.
 - Added a deterministic virtual-clock harness skeleton.
 - Added unit, async behavior, security, HTTP-boundary, and browser smoke tests.
-- All 82 automated tests are passing in the current deployment-ready build.
+- All 83 automated tests are passing in the current deployment-ready build.
 
 ## 7. Important defects found and fixed
 
@@ -777,7 +777,7 @@ Continue my trip
   `render.yaml`, deployment documentation, and automated environment-binding coverage.
 - Kept the Gemini key backend-only and deferred `vercel.json` until Render supplies the
   final backend hostname, avoiding a broken or placeholder production proxy.
-- All 82 automated tests, Python compilation, JavaScript syntax, diff validation, and
+- All 83 automated tests, Python compilation, JavaScript syntax, diff validation, and
   credential-pattern scanning pass for the deployment-ready source.
 - Created the Render Blueprint and deployed `relay-interruptible-agent-api` on the
   free plan from commit `0412231`.
@@ -808,6 +808,13 @@ Continue my trip
 - Repeated the production calculator smoke test after the hardened Render deployment;
   Relay acknowledged immediately, emitted the `calculate` tool call, preserved its
   evidence, and returned `4249` with the expected state, ledger, and timeline updates.
+- A later production check found that HTTP messages were accepted but remained at zero
+  events. The state and capability endpoints still worked, isolating the fault to the
+  asynchronous action collector rather than Vercel or Render routing.
+- Fixed the runtime lifecycle by retaining a strong reference to the collector task for
+  the server's lifetime. Added a regression test that starts the runtime task, verifies
+  it remains owned and pending, and cancels it cleanly.
+- Updated the dashboard build to `2026.09.30.1` and the suite to 83 passing tests.
 
 ## 14. Documentation rule going forward
 

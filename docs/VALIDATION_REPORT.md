@@ -1,13 +1,13 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.09.29.3`
+**Build:** `2026.09.30.1`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
 ## Executive result
 
-Relay passed all **82 automated tests**. The earlier interruption browser smoke test
+Relay passed all **83 automated tests**. The earlier interruption browser smoke test
 also passed; a Gemini-backed browser recheck of the September 29 conversation-memory
 upgrade requires restarting the currently running older Gemini process.
 No stale or duplicate result entered active evidence, no cancelled branch produced the
@@ -46,7 +46,7 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python -m unittest discover -s tests -v
 ```
 
-Result: `Ran 82 tests ... OK`.
+Result: `Ran 83 tests ... OK`.
 
 Production smoke test on September 30, 2026:
 
