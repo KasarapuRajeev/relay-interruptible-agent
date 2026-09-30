@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: relay-interruptible-agent-api
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: python -m relay.web
+    healthCheckPath: /api/status
+    envVars:
+      - key: RELAY_HOST
+        value: 0.0.0.0
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,8 +1,10 @@
 import http.client
 import json
+import os
 import threading
 import unittest
 from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 
 from relay.web import (
     MAX_ACTION_HISTORY,
@@ -10,10 +12,12 @@ from relay.web import (
     RelayRequestHandler,
     RelayWebRuntime,
 )
+import relay.web
 
 
 class _FakeRuntime:
     def __init__(self):
+        self.provider = "test"
         self.messages = []
 
     def status(self):
@@ -120,6 +124,33 @@ class ActionRetentionTests(unittest.TestCase):
 class ServerStartupSafetyTests(unittest.TestCase):
     def test_relay_server_disables_address_reuse(self):
         self.assertFalse(RelayHTTPServer.allow_reuse_address)
+
+    def test_render_host_and_port_environment_are_supported(self):
+        captured = {}
+
+        class FakeServer:
+            def __init__(self, address, handler):
+                captured["address"] = address
+
+            def serve_forever(self):
+                raise KeyboardInterrupt
+
+            def server_close(self):
+                pass
+
+        fake_runtime = _FakeRuntime()
+        with (
+            patch.dict(
+                os.environ,
+                {"RELAY_HOST": "0.0.0.0", "PORT": "10000"},
+                clear=True,
+            ),
+            patch.object(relay.web, "RelayWebRuntime", return_value=fake_runtime),
+            patch.object(relay.web, "RelayHTTPServer", FakeServer),
+        ):
+            relay.web.main()
+
+        self.assertEqual(captured["address"], ("0.0.0.0", 10000))
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ work while keeping session state consistent across interruptions.
 | Validation evidence | [`docs/VALIDATION_REPORT.md`](docs/VALIDATION_REPORT.md) |
 | Team handoff | [`TEAM_HANDOFF.md`](TEAM_HANDOFF.md) |
 | GitHub checklist | [`docs/GITHUB_SUBMISSION_CHECKLIST.md`](docs/GITHUB_SUBMISSION_CHECKLIST.md) |
+| Deployment guide | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Presentation | Pending final deck |
 | Demonstration video | Pending recording/link |
 | APK/SDK | Not applicable to the current Python web/CLI runtime |
@@ -144,6 +145,7 @@ the model selects the action and synthesizes the grounded final response.
 - `docs/VALIDATION_PLAN.md`: complete validation matrix and exit criteria
 - `docs/VALIDATION_REPORT.md`: latest evidence, defects, fixes, and remaining risks
 - `docs/GITHUB_SUBMISSION_CHECKLIST.md`: publication and release checklist
+- `docs/DEPLOYMENT.md`: Vercel frontend and Render backend deployment procedure
 - `AI_DISCLOSURE.md`: transparent runtime and development AI usage
 - `PROJECT_NOTES.md`: living teammate handoff and detailed change log
 

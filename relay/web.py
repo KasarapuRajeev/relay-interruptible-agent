@@ -316,15 +316,17 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
 def main() -> None:
     runtime = RelayWebRuntime()
     RelayRequestHandler.runtime = runtime
-    port = int(os.environ.get("RELAY_PORT", "8000"))
+    host = os.environ.get("RELAY_HOST", "127.0.0.1")
+    port = int(os.environ.get("RELAY_PORT") or os.environ.get("PORT", "8000"))
     try:
-        server = RelayHTTPServer(("127.0.0.1", port), RelayRequestHandler)
+        server = RelayHTTPServer((host, port), RelayRequestHandler)
     except OSError as error:
         raise SystemExit(
             f"Relay could not start because port {port} is already in use. "
             "Stop the older Relay server or set RELAY_PORT to a free port."
         ) from error
-    print(f"Relay dashboard ({runtime.provider}) running at http://127.0.0.1:{port}")
+    display_host = "127.0.0.1" if host == "0.0.0.0" else host
+    print(f"Relay dashboard ({runtime.provider}) running at http://{display_host}:{port}")
     print("Press Ctrl+C to stop.")
     try:
         server.serve_forever()

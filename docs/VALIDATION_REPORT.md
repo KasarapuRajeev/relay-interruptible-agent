@@ -7,7 +7,7 @@ security, dashboard behavior, and responsive layout.
 
 ## Executive result
 
-Relay passed all **77 automated tests**. The earlier interruption browser smoke test
+Relay passed all **78 automated tests**. The earlier interruption browser smoke test
 also passed; a Gemini-backed browser recheck of the September 29 conversation-memory
 upgrade requires restarting the currently running older Gemini process.
 No stale or duplicate result entered active evidence, no cancelled branch produced the
@@ -46,7 +46,7 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python -m unittest discover -s tests -v
 ```
 
-Result: `Ran 77 tests ... OK`.
+Result: `Ran 78 tests ... OK`.
 
 September 29 additions covered by the automated gate:
 
