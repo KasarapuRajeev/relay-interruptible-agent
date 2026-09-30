@@ -1,0 +1,10 @@
+node_modules/
+.env
+coverage/
+*.log
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+tmp/

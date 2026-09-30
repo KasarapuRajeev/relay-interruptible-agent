@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relay — Interruptible Agent</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div>
+          <p class="eyebrow">Samsung Theme 05</p>
+          <h1>Relay</h1>
+        </div>
+        <div class="provider"><span class="live-dot"></span><span id="provider">Connecting…</span></div>
+      </header>
+
+      <section class="workspace">
+        <div class="chat-panel">
+          <div class="panel-heading">
+            <div><p class="label">Conversation</p><h2>Interrupt at any time</h2></div>
+            <button id="clear" class="ghost">Clear display</button>
+          </div>
+          <div id="messages" class="messages" aria-live="polite">
+            <div class="message assistant">Tell me what you want to accomplish. I’ll keep listening while I work.</div>
+          </div>
+          <div class="suggestions">
+            <button data-message="Plan a 3-day trip to Delhi under ₹30,000">Start Delhi plan</button>
+            <button data-message="Actually change it to Jaipur under ₹20,000">Interrupt: Jaipur</button>
+            <button data-message="Pause this">Pause</button>
+            <button data-message="Make a study plan for mathematics exam">Switch to study</button>
+            <button data-message="Continue my trip">Resume trip</button>
+            <button data-message="Research quantum computing and its applications">Live research</button>
+            <button id="judge-demo">Run interruption demo</button>
+          </div>
+          <div id="work-indicator" class="work-indicator" hidden>
+            <span class="pulse-dot"></span>
+            <strong>Relay is working and still listening.</strong>
+            <span>Send another message now to interrupt or redirect it.</span>
+          </div>
+          <form id="composer">
+            <input id="input" autocomplete="off" placeholder="Type a request or interrupt the active task…" />
+            <button type="submit" class="send">Send</button>
+          </form>
+        </div>
+
+        <section class="plan-panel">
+          <div class="panel-heading">
+            <div><p class="label">Live context surgery</p><h2>Plan branches</h2></div>
+            <span id="branch-badge" class="branch-badge">No branch</span>
+          </div>
+          <div class="diff-card">
+            <p class="mini-label">Latest context diff</p>
+            <div id="context-diff" class="context-diff"><span class="empty">No correction yet</span></div>
+          </div>
+          <div class="impact-card">
+            <div class="evidence-title"><p class="mini-label">Interruption impact engine</p><span id="impact-count">0 decisions</span></div>
+            <div id="impact-list" class="impact-list"><span class="empty">No interruption analysed yet</span></div>
+          </div>
+          <div id="plan-branches" class="plan-branches">
+            <div class="empty-state">Start a task to see its execution plan.</div>
+          </div>
+          <div class="evidence-card">
+            <div class="evidence-title"><p class="mini-label">Evidence provenance</p><span id="evidence-count">0 items</span></div>
+            <div id="evidence-list" class="evidence-list"><span class="empty">No grounded evidence yet</span></div>
+          </div>
+          <div class="legend">
+            <span><i class="dot running"></i>Running</span>
+            <span><i class="dot preserved"></i>Preserved</span>
+            <span><i class="dot cancelled"></i>Cancelled</span>
+            <span><i class="dot completed"></i>Completed</span>
+          </div>
+        </section>
+
+        <aside class="inspector">
+          <div class="state-card">
+            <p class="label">Live state snapshot</p>
+            <div class="state-row"><span>Status</span><strong id="status">idle</strong></div>
+            <div class="state-row"><span>Intent</span><strong id="intent">unknown</strong></div>
+            <div class="state-row"><span>Version</span><strong id="version">0</strong></div>
+            <div class="state-row"><span>Task</span><strong id="task">none</strong></div>
+            <div class="state-row"><span>Branch</span><strong id="branch">none</strong></div>
+            <div class="state-row"><span>Active calls</span><strong id="calls">0</strong></div>
+          </div>
+          <div class="slots-card">
+            <p class="label">Tracked slots</p>
+            <div id="slots" class="slots"><span class="empty">No slots yet</span></div>
+          </div>
+          <div class="memory-card">
+            <div class="timeline-title"><p class="label">Session context ledger</p><span id="memory-count">0 / 40 turns</span></div>
+            <div id="memory-list" class="memory-list"><span class="empty">No remembered conversation yet</span></div>
+          </div>
+          <div class="capabilities-card">
+            <div class="timeline-title"><p class="label">Live capability registry</p><span id="capability-count">0 tools</span></div>
+            <div id="capability-list" class="capability-list"><span class="empty">Loading capabilities…</span></div>
+          </div>
+          <div class="metrics-card">
+            <div class="timeline-title"><p class="label">Reliability metrics</p><span class="metric-live">Live</span></div>
+            <div class="metrics-grid">
+              <div><strong id="metric-ack">0 ms</strong><span>Acknowledge</span></div>
+              <div><strong id="metric-cancel">0 ms</strong><span>Cancel signal</span></div>
+              <div><strong id="metric-interrupts">0</strong><span>Interruptions</span></div>
+              <div><strong id="metric-calls">0</strong><span>Calls cancelled</span></div>
+              <div><strong id="metric-stale">0</strong><span>Stale rejected</span></div>
+              <div><strong id="metric-preserved">0</strong><span>Evidence kept</span></div>
+              <div><strong id="metric-switches">0</strong><span>Task switches</span></div>
+              <div><strong id="metric-resumed">0</strong><span>Tasks resumed</span></div>
+            </div>
+          </div>
+          <div class="tasks-card">
+            <div class="timeline-title"><p class="label">Session tasks</p><span id="task-count">0 tasks</span></div>
+            <div id="task-list" class="task-list"><span class="empty">No tasks yet</span></div>
+          </div>
+          <div class="timeline-card">
+            <div class="timeline-title"><p class="label">Agent timeline</p><span id="event-count">0 events</span></div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
