@@ -148,7 +148,7 @@ class OpenAIResponsesAdapter(ModelAdapter):
         timeout_seconds: float = 30.0,
         transport: Transport = _default_transport,
     ) -> None:
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
+        self.api_key = (api_key or os.environ.get("OPENAI_API_KEY", "")).strip()
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY is required for the OpenAI adapter")
         self.model = model or os.environ.get("OPENAI_MODEL", "gpt-5.4-mini")

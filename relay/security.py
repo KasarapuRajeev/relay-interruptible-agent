@@ -8,6 +8,8 @@ import re
 _SECRET_PATTERNS = (
     re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b"),
     re.compile(r"\bAIza[A-Za-z0-9_-]{16,}\b"),
+    re.compile(r"\bAQ\.[A-Za-z0-9_-]{16,}\b"),
+    re.compile(r"(?i)header value\s+b?[\"'][^\"']+[\"']"),
     re.compile(
         r"(?i)\b(api[_ -]?key|authorization|bearer)\b\s*[:=]?\s*[\"']?[^\s,;\"']+"
     ),

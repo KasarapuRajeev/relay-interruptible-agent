@@ -6,6 +6,10 @@ from relay.openai_adapter import OpenAIAdapterError, OpenAIResponsesAdapter
 
 
 class OpenAIAdapterTests(unittest.IsolatedAsyncioTestCase):
+    def test_strips_whitespace_from_api_key(self):
+        adapter = OpenAIResponsesAdapter(api_key="  test-key\r\n")
+        self.assertEqual(adapter.api_key, "test-key")
+
     async def test_builds_structured_responses_request_and_parses_decision(self):
         captured = {}
 

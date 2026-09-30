@@ -7,6 +7,10 @@ from relay.models import ModelContext
 
 
 class GeminiAdapterTests(unittest.TestCase):
+    def test_strips_whitespace_from_api_key(self):
+        adapter = GeminiGenerateContentAdapter(api_key="  test-key\r\n")
+        self.assertEqual(adapter.api_key, "test-key")
+
     def test_builds_structured_request_and_parses_decision(self):
         captured = {}
 

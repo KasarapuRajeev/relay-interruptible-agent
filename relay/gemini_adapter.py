@@ -104,7 +104,7 @@ class GeminiGenerateContentAdapter(ModelAdapter):
         retry_delays: tuple[float, ...] = (0.5, 1.0),
         transport: Transport = _default_transport,
     ) -> None:
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+        self.api_key = (api_key or os.environ.get("GEMINI_API_KEY", "")).strip()
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is required for the Gemini adapter")
         self.model = model or os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")

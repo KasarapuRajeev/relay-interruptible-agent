@@ -7,7 +7,7 @@ demo, report, or final submission.
 **Current development status:** Working provider-integrated MVP; approximately 75%
 of the intended hackathon submission is complete.
 **Latest dashboard build:** `2026.09.29.3`
-**Automated verification:** 79 tests passing
+**Automated verification:** 82 tests passing
 
 ---
 
@@ -318,7 +318,7 @@ layer without replacing the Python runtime.
 - Agent event timeline
 - Secure PowerShell launchers
 - Safe provider error diagnostics
-- 79 automated tests
+- 82 automated tests
 
 ### Successfully demonstrated
 

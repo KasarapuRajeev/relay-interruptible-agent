@@ -16,6 +16,13 @@ class SecurityTests(unittest.TestCase):
         self.assertNotIn("AIza", value)
         self.assertIn("[REDACTED]", value)
 
+    def test_alternate_google_secret_and_header_error_are_redacted(self):
+        fake_secret = "AQ." + "Ab8RN6LENnq0CsKdCnQ0q3pgAbSpFbZ8EMzVEUuqSeT40OT9YQ"
+        value = sanitize_error(f"Invalid header value b'{fake_secret}\\n'")
+        self.assertNotIn("AQ.", value)
+        self.assertNotIn("header value", value.lower())
+        self.assertIn("[REDACTED]", value)
+
     def test_external_error_is_single_line_and_bounded(self):
         value = sanitize_error("failure\n" + "x" * 1_000)
         self.assertNotIn("\n", value)

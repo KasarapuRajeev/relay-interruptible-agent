@@ -185,7 +185,7 @@ harness. UI work will not be allowed to change core orchestration behavior.
 - Added a CLI that prints the same JSON actions used by the evaluation harness.
 - Added a deterministic virtual-clock harness skeleton.
 - Added unit, async behavior, security, HTTP-boundary, and browser smoke tests.
-- All 79 automated tests are passing in the current deployment-ready build.
+- All 82 automated tests are passing in the current deployment-ready build.
 
 ## 7. Important defects found and fixed
 
@@ -777,7 +777,7 @@ Continue my trip
   `render.yaml`, deployment documentation, and automated environment-binding coverage.
 - Kept the Gemini key backend-only and deferred `vercel.json` until Render supplies the
   final backend hostname, avoiding a broken or placeholder production proxy.
-- All 79 automated tests, Python compilation, JavaScript syntax, diff validation, and
+- All 82 automated tests, Python compilation, JavaScript syntax, diff validation, and
   credential-pattern scanning pass for the deployment-ready source.
 - Created the Render Blueprint and deployed `relay-interruptible-agent-api` on the
   free plan from commit `0412231`.
@@ -796,6 +796,13 @@ Continue my trip
   newest authoritative session slots before validation. Provider-only fields remain
   untouched, while stale or missing provider arguments can no longer discard the
   user's latest structured instruction.
+- Production action inspection then identified the actual immediate failure: the
+  Render secret had a trailing newline, which Python rejected as an HTTP header.
+- Provider adapters now trim surrounding secret whitespace at startup. The external
+  error sanitizer also redacts alternate Google `AQ.` credentials and complete invalid
+  header-value diagnostics, with regression coverage. Because the previous public
+  action payload contained the credential, the deployed Gemini key must be revoked and
+  replaced even after the payload disappears on restart.
 
 ## 14. Documentation rule going forward
 
