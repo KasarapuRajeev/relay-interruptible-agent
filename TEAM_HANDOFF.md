@@ -6,8 +6,8 @@
 demo, report, or final submission.
 **Current development status:** Working provider-integrated MVP; approximately 75%
 of the intended hackathon submission is complete.
-**Latest dashboard build:** `2026.09.30.1`
-**Automated verification:** 83 tests passing
+**Latest dashboard build:** `2026.09.30.2`
+**Automated verification:** 87 tests passing
 
 ---
 
@@ -609,7 +609,7 @@ http://127.0.0.1:8000
 The provider badge should show:
 
 ```text
-Gemini · 2026.09.30.1
+Gemini · 2026.09.30.2
 ```
 
 Never paste API keys into code, documentation, screenshots, Git commits, or team chat.

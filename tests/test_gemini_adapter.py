@@ -85,6 +85,36 @@ class GeminiAdapterTests(unittest.TestCase):
         self.assertEqual(decision.text, "Recovered")
         self.assertEqual(attempts, 3)
 
+    def test_fails_over_to_alternate_model_after_primary_503(self):
+        urls = []
+
+        def transport(url, headers, payload, timeout):
+            urls.append(url)
+            if "gemini-primary" in url:
+                raise GeminiAdapterError.from_http(503, '{"error":{"status":"UNAVAILABLE"}}')
+            decision = {
+                "kind": "final",
+                "text": "Fallback recovered",
+                "tool_name": "",
+                "arguments_json": "{}",
+            }
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(decision)}]}}]}
+
+        adapter = GeminiGenerateContentAdapter(
+            api_key="test-key",
+            model="gemini-primary",
+            fallback_models=("gemini-fallback",),
+            transport=transport,
+            retry_delays=(0,),
+        )
+        decision = asyncio.run(
+            adapter.decide(ModelContext("task-1", "general_assistance", {}, []))
+        )
+
+        self.assertEqual(decision.text, "Fallback recovered")
+        self.assertEqual(len(urls), 3)
+        self.assertIn("gemini-fallback", urls[-1])
+
 
 if __name__ == "__main__":
     unittest.main()

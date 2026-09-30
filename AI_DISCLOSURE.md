@@ -24,7 +24,7 @@ was used as a live runtime provider while testing the provider-adapter path.
 
 The team remains responsible for the submitted design and implementation. Generated
 or suggested changes were reviewed in the project workspace and checked through the
-automated test suite. The release candidate currently passes 83 automated tests,
+automated test suite. The release candidate currently passes 87 automated tests,
 including interruption races, cancellation, stale-result rejection, evidence
 isolation, provider failure, HTTP boundaries, and secret redaction.
 

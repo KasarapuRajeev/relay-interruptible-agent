@@ -3,6 +3,11 @@ const timeline = document.querySelector("#timeline");
 const form = document.querySelector("#composer");
 const input = document.querySelector("#input");
 let cursor = 0;
+let relaySessionId = crypto.randomUUID();
+
+function sessionHeaders(extra = {}) {
+  return { ...extra, "X-Relay-Session": relaySessionId };
+}
 
 function addMessage(text, role, final = false) {
   const node = document.createElement("div");
@@ -350,7 +355,7 @@ async function send(text) {
   input.value = "";
   await fetch("/api/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: sessionHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ text: value }),
   });
 }
@@ -363,8 +368,12 @@ document.querySelectorAll("[data-message]").forEach((button) => {
   button.addEventListener("click", () => send(button.dataset.message));
 });
 document.querySelector("#clear").addEventListener("click", () => {
+  relaySessionId = crypto.randomUUID();
+  cursor = 0;
   messages.replaceChildren();
   timeline.replaceChildren();
+  document.querySelector("#event-count").textContent = "0 events";
+  loadStatus();
 });
 document.querySelector("#judge-demo").addEventListener("click", async () => {
   await send("Plan a 3-day trip to Delhi under ₹30,000");
@@ -375,9 +384,13 @@ document.querySelector("#judge-demo").addEventListener("click", async () => {
 });
 
 async function poll() {
+  const requestedSession = relaySessionId;
   try {
-    const response = await fetch(`/api/actions?after=${cursor}`);
+    const response = await fetch(`/api/actions?after=${cursor}`, {
+      headers: sessionHeaders(),
+    });
     const data = await response.json();
+    if (requestedSession !== relaySessionId) return;
     data.actions.forEach(renderAction);
     cursor = data.cursor;
     document.querySelector("#event-count").textContent = `${cursor} events`;
@@ -386,11 +399,17 @@ async function poll() {
   }
 }
 
-fetch("/api/status")
-  .then((response) => response.json())
-  .then((data) => {
+function loadStatus() {
+  const requestedSession = relaySessionId;
+  fetch("/api/status", { headers: sessionHeaders() })
+    .then((response) => response.json())
+    .then((data) => {
+      if (requestedSession !== relaySessionId) return;
     document.querySelector("#provider").textContent = `${data.provider} · ${data.build_version}`;
     updateSnapshot(data.snapshot);
     renderCapabilities(data.capabilities || []);
-  });
+    });
+}
+
+loadStatus();
 poll();

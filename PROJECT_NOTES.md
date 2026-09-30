@@ -815,6 +815,14 @@ Continue my trip
   the server's lifetime. Added a regression test that starts the runtime task, verifies
   it remains owned and pending, and cancels it cleanly.
 - Updated the dashboard build to `2026.09.30.1` and the suite to 83 passing tests.
+- Fixed the production Gemini overload path in build `2026.09.30.2`: greetings and
+  thanks now use a truthful local fast path, while provider requests retry the primary
+  model and then fail over to configured stable Gemini alternatives on HTTP 503/404.
+- Replaced the single global web runtime with UUID-scoped browser runtimes. A browser
+  reload now starts a clean session, different visitors cannot share context, and
+  **Clear display** starts a new backend session instead of only deleting DOM nodes.
+- Added provider-failover, local-fast-path, registry isolation, and eviction regression
+  tests. JavaScript syntax validation and all 87 automated Python tests pass.
 
 ## 14. Documentation rule going forward
 

@@ -1,13 +1,13 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.09.30.1`
+**Build:** `2026.09.30.2`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
 ## Executive result
 
-Relay passed all **83 automated tests**. The earlier interruption browser smoke test
+Relay passed all **87 automated tests**. The earlier interruption browser smoke test
 also passed; a Gemini-backed browser recheck of the September 29 conversation-memory
 upgrade requires restarting the currently running older Gemini process.
 No stale or duplicate result entered active evidence, no cancelled branch produced the
@@ -33,11 +33,12 @@ and network availability; it is not represented as completed by this report.
 | Semantic impact | Pass | Exact, alias, changed-value, and unrelated dependencies are classified |
 | Multi-task isolation | Pass | Travel and study checkpoints do not share evidence |
 | Tool safety | Pass | Schema validation, bounded retry, timeout, and idempotency pass |
-| Provider adapters | Pass (mocked) | OpenAI/Gemini structured parsing and safe error mapping pass |
+| Provider adapters | Pass (mocked) | OpenAI/Gemini structured parsing, 503 model failover, and safe error mapping pass |
 | Research connector | Pass (mocked) | Canonical citation parsing and empty-result failure pass |
 | Secret handling | Pass | Credential-shaped secrets are redacted and errors are bounded |
 | HTTP boundary | Pass | Empty/oversized bodies and static path traversal are rejected |
 | Retention | Pass | Timeline is capped at 2,000 actions without breaking its cursor |
+| Session isolation | Pass | Reload and Clear display receive a fresh backend context |
 
 Command used:
 
@@ -46,7 +47,7 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python -m unittest discover -s tests -v
 ```
 
-Result: `Ran 83 tests ... OK`.
+Result: `Ran 87 tests ... OK`.
 
 Production smoke test on September 30, 2026:
 

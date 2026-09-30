@@ -8,6 +8,7 @@ import os
 import socket
 import threading
 import uuid
+from collections import OrderedDict
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -25,7 +26,7 @@ from .research import search_wikipedia
 
 
 WEB_ROOT = Path(__file__).resolve().parent.parent / "web"
-BUILD_VERSION = "2026.09.30.1"
+BUILD_VERSION = "2026.09.30.2"
 MAX_ACTION_HISTORY = 2_000
 
 
@@ -74,6 +75,21 @@ class RelayWebRuntime:
     async def _start(self) -> None:
         await self.agent.start()
         self._collector_task = asyncio.create_task(self._collect_actions())
+
+    def close(self) -> None:
+        """Stop this session's agent and event loop when the session is evicted."""
+
+        async def shutdown() -> None:
+            await self.agent.close()
+            if self._collector_task:
+                self._collector_task.cancel()
+                await asyncio.gather(self._collector_task, return_exceptions=True)
+
+        try:
+            asyncio.run_coroutine_threadsafe(shutdown(), self._loop).result(timeout=5)
+        finally:
+            self._loop.call_soon_threadsafe(self._loop.stop)
+            self._thread.join(timeout=2)
 
     def submit_text(self, text: str) -> None:
         event = InputEvent(
@@ -240,13 +256,46 @@ class RelayWebRuntime:
         )
 
 
+class RelaySessionRegistry:
+    """Isolate browser sessions while keeping the dependency-free HTTP server."""
+
+    def __init__(self, factory=RelayWebRuntime, max_sessions: int = 24) -> None:
+        self.factory = factory
+        self.max_sessions = max(1, max_sessions)
+        self._sessions: OrderedDict[str, RelayWebRuntime] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def get(self, session_id: str) -> RelayWebRuntime:
+        try:
+            key = str(uuid.UUID(session_id))
+        except (ValueError, AttributeError, TypeError):
+            key = "default"
+        evicted: RelayWebRuntime | None = None
+        with self._lock:
+            runtime = self._sessions.pop(key, None)
+            if runtime is None:
+                runtime = self.factory()
+                if len(self._sessions) >= self.max_sessions:
+                    _, evicted = self._sessions.popitem(last=False)
+            self._sessions[key] = runtime
+        if evicted is not None:
+            evicted.close()
+        return runtime
+
+
 class RelayRequestHandler(BaseHTTPRequestHandler):
     runtime: RelayWebRuntime
+    runtime_registry: RelaySessionRegistry | None = None
+
+    def _runtime(self) -> RelayWebRuntime:
+        if self.runtime_registry is None:
+            return self.runtime
+        return self.runtime_registry.get(self.headers.get("X-Relay-Session", ""))
 
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
         if parsed.path == "/api/status":
-            self._json(HTTPStatus.OK, self.runtime.status())
+            self._json(HTTPStatus.OK, self._runtime().status())
             return
         if parsed.path == "/api/actions":
             try:
@@ -254,7 +303,7 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
             except ValueError:
                 self._json(HTTPStatus.BAD_REQUEST, {"error": "after must be an integer"})
                 return
-            actions, cursor = self.runtime.read_actions(after)
+            actions, cursor = self._runtime().read_actions(after)
             self._json(HTTPStatus.OK, {"actions": actions, "cursor": cursor})
             return
         self._serve_static(parsed.path)
@@ -274,7 +323,7 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError) as error:
             self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
             return
-        self.runtime.submit_text(text)
+        self._runtime().submit_text(text)
         self._json(HTTPStatus.ACCEPTED, {"accepted": True})
 
     def _serve_static(self, request_path: str) -> None:
@@ -315,8 +364,7 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    runtime = RelayWebRuntime()
-    RelayRequestHandler.runtime = runtime
+    RelayRequestHandler.runtime_registry = RelaySessionRegistry()
     host = os.environ.get("RELAY_HOST", "127.0.0.1")
     port = int(os.environ.get("RELAY_PORT") or os.environ.get("PORT", "8000"))
     try:
@@ -327,7 +375,7 @@ def main() -> None:
             "Stop the older Relay server or set RELAY_PORT to a free port."
         ) from error
     display_host = "127.0.0.1" if host == "0.0.0.0" else host
-    print(f"Relay dashboard ({runtime.provider}) running at http://{display_host}:{port}")
+    print(f"Relay dashboard running at http://{display_host}:{port}")
     print("Press Ctrl+C to stop.")
     try:
         server.serve_forever()

@@ -11,6 +11,7 @@ from relay.web import (
     MAX_ACTION_HISTORY,
     RelayHTTPServer,
     RelayRequestHandler,
+    RelaySessionRegistry,
     RelayWebRuntime,
 )
 import relay.web
@@ -41,6 +42,7 @@ class WebBoundaryTests(unittest.TestCase):
     def setUpClass(cls):
         cls.runtime = _FakeRuntime()
         RelayRequestHandler.runtime = cls.runtime
+        RelayRequestHandler.runtime_registry = None
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), RelayRequestHandler)
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
@@ -142,6 +144,42 @@ class RuntimeLifecycleTests(unittest.IsolatedAsyncioTestCase):
         finally:
             runtime._collector_task.cancel()
             await asyncio.gather(runtime._collector_task, return_exceptions=True)
+
+
+class SessionIsolationTests(unittest.TestCase):
+    def test_browser_sessions_receive_independent_runtimes(self):
+        created = []
+
+        class FakeSession:
+            def __init__(self):
+                self.number = len(created)
+                self.closed = False
+                created.append(self)
+
+            def close(self):
+                self.closed = True
+
+        registry = RelaySessionRegistry(factory=FakeSession, max_sessions=2)
+        first = registry.get("11111111-1111-1111-1111-111111111111")
+        same = registry.get("11111111-1111-1111-1111-111111111111")
+        second = registry.get("22222222-2222-2222-2222-222222222222")
+
+        self.assertIs(first, same)
+        self.assertIsNot(first, second)
+
+    def test_oldest_session_is_closed_when_registry_is_full(self):
+        class FakeSession:
+            def __init__(self):
+                self.closed = False
+
+            def close(self):
+                self.closed = True
+
+        registry = RelaySessionRegistry(factory=FakeSession, max_sessions=1)
+        first = registry.get("11111111-1111-1111-1111-111111111111")
+        registry.get("22222222-2222-2222-2222-222222222222")
+
+        self.assertTrue(first.closed)
 
 
 class ServerStartupSafetyTests(unittest.TestCase):

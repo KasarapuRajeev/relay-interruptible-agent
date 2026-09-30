@@ -49,6 +49,26 @@ class OrchestratorTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(first.payload["interruptible"])
         self.assertEqual(second.type, ActionType.TOOL_CALL)
 
+    async def test_greeting_uses_local_fast_path_without_provider(self):
+        class FailingModel:
+            async def decide(self, context):
+                raise AssertionError("The provider must not be called for a greeting")
+
+        agent = RelayAgent(clock=lambda: 10, model=FailingModel())
+        await agent.start()
+        try:
+            await agent.submit(event("hii"))
+            acknowledgement = await agent.next_action()
+            final = await agent.next_action()
+
+            self.assertEqual(acknowledgement.type, ActionType.SPOKEN)
+            self.assertEqual(final.type, ActionType.FINAL)
+            self.assertTrue(final.payload["local_fast_path"])
+            self.assertIn("I’m Relay", final.payload["text"])
+            self.assertEqual(final.payload["state_snapshot"]["status"], "complete")
+        finally:
+            await agent.close()
+
     async def test_correction_cancels_old_call_and_updates_only_changed_slot(self):
         await self.agent.submit(event("Plan a 3-day trip to Delhi under ₹30,000"))
         await self.agent.next_action()

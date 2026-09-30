@@ -100,6 +100,7 @@ class GeminiGenerateContentAdapter(ModelAdapter):
         *,
         api_key: str | None = None,
         model: str | None = None,
+        fallback_models: tuple[str, ...] | None = None,
         timeout_seconds: float = 30.0,
         retry_delays: tuple[float, ...] = (0.5, 1.0),
         transport: Transport = _default_transport,
@@ -107,7 +108,22 @@ class GeminiGenerateContentAdapter(ModelAdapter):
         self.api_key = (api_key or os.environ.get("GEMINI_API_KEY", "")).strip()
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is required for the Gemini adapter")
-        self.model = model or os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+        self.model = (model or os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")).strip()
+        configured_fallbacks = fallback_models
+        if configured_fallbacks is None:
+            configured_fallbacks = tuple(
+                item.strip()
+                for item in os.environ.get(
+                    "GEMINI_FALLBACK_MODELS",
+                    "gemini-2.5-flash-lite,gemini-2.5-flash",
+                ).split(",")
+                if item.strip()
+            )
+        self.fallback_models = tuple(
+            candidate
+            for candidate in dict.fromkeys(configured_fallbacks)
+            if candidate and candidate != self.model
+        )
         self.timeout_seconds = timeout_seconds
         self.retry_delays = retry_delays
         self.transport = transport
@@ -151,7 +167,7 @@ class GeminiGenerateContentAdapter(ModelAdapter):
         )
 
     async def _request_with_retry(self, payload: dict[str, Any]) -> dict[str, Any]:
-        models = list(dict.fromkeys((self.model, "gemini-3.1-flash-lite")))
+        models = (self.model, *self.fallback_models)
         last_error: GeminiAdapterError | None = None
         headers = {"Content-Type": "application/json", "x-goog-api-key": self.api_key}
         for model_index, model in enumerate(models):
@@ -167,11 +183,12 @@ class GeminiGenerateContentAdapter(ModelAdapter):
                     )
                 except GeminiAdapterError as error:
                     last_error = error
-                    if error.status_code != 503:
+                    if error.status_code not in {404, 503}:
                         raise
-                    if attempt < len(delays):
+                    if error.status_code == 503 and attempt < len(delays):
                         await asyncio.sleep(delays[attempt])
-            # A configured non-Lite model gets one final attempt on Flash-Lite.
+                    else:
+                        break
         if last_error is not None:
             raise GeminiAdapterError(
                 str(last_error),

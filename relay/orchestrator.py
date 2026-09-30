@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import time
 import uuid
 from collections.abc import Callable
@@ -85,6 +86,22 @@ def grounded_fallback_text(results: list[dict[str, Any]]) -> str | None:
             source_count += 1
     rendered = "\n".join(lines).strip()
     return rendered[:7000] if rendered else None
+
+
+def local_social_response(text: str, intent: str) -> str | None:
+    """Answer tiny social turns without making availability depend on an LLM API."""
+
+    if intent != "general_assistance":
+        return None
+    normalized = re.sub(r"[^a-z\s]", "", text.lower()).strip()
+    if re.fullmatch(r"(?:hi+|hey+|hello|good (?:morning|afternoon|evening))", normalized):
+        return (
+            "Hello! I’m Relay. Give me any task, then change, pause, or replace it "
+            "while I work—I’ll preserve only the context that still matters."
+        )
+    if re.fullmatch(r"(?:thanks?|thank you|thank you very much)", normalized):
+        return "You’re welcome. I’m ready for your next task or interruption."
+    return None
 
 
 class RelayAgent:
@@ -299,6 +316,21 @@ class RelayAgent:
             task_id=task.task_id,
             state_snapshot=self.snapshot.to_dict(),
         )
+
+        fast_response = local_social_response(text, update.intent)
+        if fast_response:
+            completed = self.tasks.complete_active()
+            self._sync_snapshot()
+            self.snapshot.status = "complete"
+            self.snapshot.version += 1
+            await self._emit(
+                ActionType.FINAL,
+                text=fast_response,
+                task_id=completed.task_id if completed else None,
+                local_fast_path=True,
+                state_snapshot=self.snapshot.to_dict(),
+            )
+            return
 
         generation = self._task_generation = self._task_generation + 1
         self._slow_task = asyncio.create_task(self._run_slow_path(generation))
