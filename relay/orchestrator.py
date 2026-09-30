@@ -422,7 +422,9 @@ class RelayAgent:
                     )
                     return
                 tool_name = decision.tool_name or ""
-                arguments = decision.arguments
+                arguments = self._reconcile_tool_arguments(
+                    tool_name, decision.arguments
+                )
             else:
                 tool_name, arguments = self._select_tool()
             if tool_name not in self.tools.definitions:
@@ -501,6 +503,26 @@ class RelayAgent:
         if self.snapshot.intent == "study_planning":
             return "build_study_plan", dict(self.snapshot.slots)
         return "general_assistant", dict(self.snapshot.slots)
+
+    def _reconcile_tool_arguments(
+        self, tool_name: str, model_arguments: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Keep parsed session slots authoritative over provider-generated arguments.
+
+        A model chooses the next tool, but it must not silently omit or rewrite values
+        already extracted from the user's newest instruction. Only fields declared by
+        that tool are copied from the live snapshot; provider-only fields such as a
+        research aspect remain intact.
+        """
+        definition = self.tools.definitions.get(tool_name)
+        if definition is None:
+            return dict(model_arguments)
+        arguments = dict(model_arguments)
+        properties = definition.parameters.get("properties", {})
+        for name in properties:
+            if name in self.snapshot.slots:
+                arguments[name] = self.snapshot.slots[name]
+        return arguments
 
     async def _start_tool_call(
         self,

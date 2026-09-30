@@ -25,7 +25,7 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 - [x] Confirm repository name: `relay-interruptible-agent`.
 - [x] Confirm repository visibility: public.
 - [ ] Confirm the final team/member names and college name.
-- [x] Re-run all 78 automated tests after production proxy configuration.
+- [x] Re-run all 79 automated tests after production proxy and tool-boundary validation.
 - [x] Re-run the API-key and credential scan; no tracked secret was found.
 - [x] Create the first reviewed commit: `a1bd394`.
 - [x] Create the public GitHub repository without committing any secret.

@@ -286,6 +286,41 @@ class ToolSafetyTests(unittest.TestCase):
 
 
 class ToolLifecycleTests(unittest.IsolatedAsyncioTestCase):
+    async def test_live_slots_repair_provider_tool_arguments(self):
+        class MissingArgumentsModel:
+            async def decide(self, context):
+                return ModelDecision(
+                    kind="tool_call",
+                    tool_name="calculate",
+                    arguments={},
+                )
+
+        calculate_tool = {
+            "name": "calculate",
+            "description": "Calculate safely",
+            "parameters": {
+                "type": "object",
+                "required": ["expression"],
+                "properties": {"expression": {"type": "string"}},
+            },
+            "state_modifying": False,
+        }
+        agent = RelayAgent(model=MissingArgumentsModel())
+        agent.tools.load_manifest([calculate_tool])
+        await agent.start()
+        try:
+            await agent.submit(event("Calculate (1250 * 3) + 499"))
+            await agent.next_action()
+            tool_call = await agent.next_action()
+            self.assertEqual(tool_call.type, ActionType.TOOL_CALL)
+            self.assertEqual(tool_call.payload["tool_name"], "calculate")
+            self.assertEqual(
+                tool_call.payload["arguments"]["expression"],
+                "(1250 * 3) + 499",
+            )
+        finally:
+            await agent.close()
+
     async def test_grounded_result_survives_provider_synthesis_timeout(self):
         class ToolThenTimeoutModel:
             async def decide(self, context):

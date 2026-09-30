@@ -185,7 +185,7 @@ harness. UI work will not be allowed to change core orchestration behavior.
 - Added a CLI that prints the same JSON actions used by the evaluation harness.
 - Added a deterministic virtual-clock harness skeleton.
 - Added unit, async behavior, security, HTTP-boundary, and browser smoke tests.
-- All 78 automated tests are passing in the current deployment-ready build.
+- All 79 automated tests are passing in the current deployment-ready build.
 
 ## 7. Important defects found and fixed
 
@@ -777,7 +777,7 @@ Continue my trip
   `render.yaml`, deployment documentation, and automated environment-binding coverage.
 - Kept the Gemini key backend-only and deferred `vercel.json` until Render supplies the
   final backend hostname, avoiding a broken or placeholder production proxy.
-- All 78 automated tests, Python compilation, JavaScript syntax, diff validation, and
+- All 79 automated tests, Python compilation, JavaScript syntax, diff validation, and
   credential-pattern scanning pass for the deployment-ready source.
 - Created the Render Blueprint and deployed `relay-interruptible-agent-api` on the
   free plan from commit `0412231`.
@@ -787,6 +787,15 @@ Continue my trip
   `/api/:path*` rewrite to the stateful Render backend.
 - The remaining hosting step is importing the repository into Vercel and validating
   the public frontend end to end.
+- Deployed the static dashboard to Vercel and verified that it reached the Render
+  backend, reported Gemini build `2026.09.29.3`, and loaded all five capabilities.
+- The first production calculator smoke test exposed a provider/tool boundary defect:
+  Gemini selected `calculate` but omitted its required argument even though Relay had
+  already parsed the expression into live session state.
+- Fixed the boundary so tool fields declared in the manifest are reconciled from the
+  newest authoritative session slots before validation. Provider-only fields remain
+  untouched, while stale or missing provider arguments can no longer discard the
+  user's latest structured instruction.
 
 ## 14. Documentation rule going forward
 
