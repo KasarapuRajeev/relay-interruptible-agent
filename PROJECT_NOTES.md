@@ -765,6 +765,10 @@ Continue my trip
 - The user created the public repository at
   `https://github.com/KasarapuRajeev/relay-interruptible-agent`; remote verification
   confirmed it is reachable and empty before the first source push.
+- Re-ran all 77 tests and the credential-pattern scan before publication.
+- Created the reviewed initial commit `a1bd394` and pushed the `main` branch to the
+  public GitHub repository. The final submission tag remains intentionally pending
+  until the presentation and video artifacts are complete.
 
 ## 14. Documentation rule going forward
 

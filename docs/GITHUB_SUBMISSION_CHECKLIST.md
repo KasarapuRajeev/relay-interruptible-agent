@@ -10,7 +10,7 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 
 | Required item | Status | Repository evidence / next action |
 |---|---|---|
-| Source Code | Ready for first push | `relay/`, `web/`, `tests/`, `scripts/`, and `pyproject.toml` |
+| Source Code | Published | Public `main` branch contains `relay/`, `web/`, `tests/`, `scripts/`, and `pyproject.toml` |
 | Presentation | Pending | Create the final editable deck after the team confirms names and submission format |
 | Video | Pending | Record the validated interruption scenario and add the final share link to the README |
 | AI Disclosure | Ready locally | `AI_DISCLOSURE.md` |
@@ -27,9 +27,9 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 - [ ] Confirm the final team/member names and college name.
 - [ ] Re-run all automated tests.
 - [ ] Re-run the API-key and credential scan.
-- [ ] Create the first reviewed commit.
+- [x] Create the first reviewed commit: `a1bd394`.
 - [x] Create the public GitHub repository without committing any secret.
-- [ ] Push the default branch.
+- [x] Push the default `main` branch to GitHub.
 - [ ] Add the presentation and video or their permitted links.
 - [ ] Verify README instructions on a clean machine.
 - [ ] Create and push the final annotated submission tag.
