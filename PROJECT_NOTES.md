@@ -803,6 +803,11 @@ Continue my trip
   header-value diagnostics, with regression coverage. Because the previous public
   action payload contained the credential, the deployed Gemini key must be revoked and
   replaced even after the payload disappears on restart.
+- Deployed and verified the stable public frontend at
+  `https://relay-interruptible-agent.vercel.app`.
+- Repeated the production calculator smoke test after the hardened Render deployment;
+  Relay acknowledged immediately, emitted the `calculate` tool call, preserved its
+  evidence, and returned `4249` with the expected state, ledger, and timeline updates.
 
 ## 14. Documentation rule going forward
 

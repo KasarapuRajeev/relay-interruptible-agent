@@ -48,6 +48,15 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 
 Result: `Ran 82 tests ... OK`.
 
+Production smoke test on September 30, 2026:
+
+- Loaded `https://relay-interruptible-agent.vercel.app`.
+- Confirmed the Vercel `/api/*` rewrite reached the Render Gemini runtime.
+- Confirmed all five capabilities loaded.
+- Submitted `Calculate (1250 * 3) + 499` and received the grounded result `4249`.
+- Confirmed the visible flow included acknowledgement, tool call, evidence, final
+  answer, session ledger, task card, and agent timeline.
+
 September 29 additions covered by the automated gate:
 
 - Arbitrary general-conversation history reaches Gemini and OpenAI payloads.

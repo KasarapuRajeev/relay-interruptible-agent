@@ -57,6 +57,12 @@ repository root and deploy it as a static site with `web` as the output director
 The browser continues using relative `/api/...` URLs, so no Gemini key is exposed in
 frontend JavaScript.
 
+Production frontend: [relay-interruptible-agent.vercel.app](https://relay-interruptible-agent.vercel.app)
+
+Verified on September 30, 2026: the stable Vercel URL loaded the dashboard, reached
+the Render backend through the rewrite, reported Gemini, listed five capabilities,
+and completed the calculator smoke test with grounded evidence.
+
 ## 3. Edit the UI after deployment
 
 - Change `web/index.html`, `web/style.css`, or `web/app.js`.

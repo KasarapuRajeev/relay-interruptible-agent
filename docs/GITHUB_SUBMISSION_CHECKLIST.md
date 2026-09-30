@@ -17,7 +17,7 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 | README | Ready locally | `README.md`; add team/repository/video details before final tag |
 | APK/SDK (if any) | Not applicable | Relay is a Python web/CLI runtime; no Android APK or distributable SDK is currently produced |
 | TAG | Pending publication | Create an annotated tag only after final tests and artifact links, suggested name: `v1.0.0-submission` |
-| Other | Backend deployed | Validation report, execution plan, unique-product plan, teammate handoff, and [live Render API](https://relay-interruptible-agent-api.onrender.com) |
+| Other | Application deployed | Validation report, execution plan, unique-product plan, teammate handoff, [live frontend](https://relay-interruptible-agent.vercel.app), and [live Render API](https://relay-interruptible-agent-api.onrender.com) |
 
 ## Repository publication gate
 
