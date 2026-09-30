@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "web",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://relay-interruptible-agent-api.onrender.com/api/:path*"
+    }
+  ]
+}

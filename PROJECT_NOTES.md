@@ -779,6 +779,14 @@ Continue my trip
   final backend hostname, avoiding a broken or placeholder production proxy.
 - All 78 automated tests, Python compilation, JavaScript syntax, diff validation, and
   credential-pattern scanning pass for the deployment-ready source.
+- Created the Render Blueprint and deployed `relay-interruptible-agent-api` on the
+  free plan from commit `0412231`.
+- Verified the public production health endpoint returned HTTP 200 with Gemini and
+  build `2026.09.29.3`.
+- Added `vercel.json` with `web` as the static output directory and a production
+  `/api/:path*` rewrite to the stateful Render backend.
+- The remaining hosting step is importing the repository into Vercel and validating
+  the public frontend end to end.
 
 ## 14. Documentation rule going forward
 

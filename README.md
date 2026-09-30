@@ -2,6 +2,11 @@
 
 GitHub: [KasarapuRajeev/relay-interruptible-agent](https://github.com/KasarapuRajeev/relay-interruptible-agent)
 
+Production backend: [relay-interruptible-agent-api.onrender.com](https://relay-interruptible-agent-api.onrender.com)
+
+The Vercel frontend deployment is the remaining hosting step. Its relative `/api/*`
+requests are already configured to proxy to the stateful Render service.
+
 Relay is a protocol-first Python runtime for Samsung Theme 05: Interruptible
 Real-Time Agents. It coordinates a responsive fast path with asynchronous slow
 work while keeping session state consistent across interruptions.
@@ -17,6 +22,8 @@ work while keeping session state consistent across interruptions.
 | Team handoff | [`TEAM_HANDOFF.md`](TEAM_HANDOFF.md) |
 | GitHub checklist | [`docs/GITHUB_SUBMISSION_CHECKLIST.md`](docs/GITHUB_SUBMISSION_CHECKLIST.md) |
 | Deployment guide | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Render backend | [Live](https://relay-interruptible-agent-api.onrender.com) |
+| Vercel frontend | Configuration ready; deployment pending |
 | Presentation | Pending final deck |
 | Demonstration video | Pending recording/link |
 | APK/SDK | Not applicable to the current Python web/CLI runtime |

@@ -25,15 +25,19 @@ Render Python service
 3. Enter `GEMINI_API_KEY` in the Render dashboard when prompted. Never place its
    value in GitHub, `render.yaml`, screenshots, or documentation.
 4. Wait until `/api/status` passes the configured health check.
-5. Copy the generated `https://...onrender.com` service URL.
+5. Copy the generated service URL.
+
+Production backend: [relay-interruptible-agent-api.onrender.com](https://relay-interruptible-agent-api.onrender.com)
+
+Verified on September 30, 2026: `GET /api/status` returned HTTP 200 with the
+Gemini provider and build `2026.09.29.3`.
 
 The process binds to Render's `PORT` on `0.0.0.0`. The local workflow remains
 unchanged because it defaults to `127.0.0.1:8000`.
 
 ## 2. Connect the Vercel frontend
 
-After the Render URL is known, add the following production rewrite to
-`vercel.json`, replacing the example hostname:
+The repository now includes the following production rewrite in `vercel.json`:
 
 ```json
 {
@@ -42,13 +46,13 @@ After the Render URL is known, add the following production rewrite to
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://REPLACE-WITH-RENDER-HOST.onrender.com/api/:path*"
+      "destination": "https://relay-interruptible-agent-api.onrender.com/api/:path*"
     }
   ]
 }
 ```
 
-Then import the same GitHub repository in Vercel. Keep the project root as the
+Import the same GitHub repository in Vercel. Keep the project root as the
 repository root and deploy it as a static site with `web` as the output directory.
 The browser continues using relative `/api/...` URLs, so no Gemini key is exposed in
 frontend JavaScript.

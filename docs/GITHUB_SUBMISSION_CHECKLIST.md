@@ -17,7 +17,7 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 | README | Ready locally | `README.md`; add team/repository/video details before final tag |
 | APK/SDK (if any) | Not applicable | Relay is a Python web/CLI runtime; no Android APK or distributable SDK is currently produced |
 | TAG | Pending publication | Create an annotated tag only after final tests and artifact links, suggested name: `v1.0.0-submission` |
-| Other | Ready locally | Validation report, execution plan, unique-product plan, and teammate handoff |
+| Other | Backend deployed | Validation report, execution plan, unique-product plan, teammate handoff, and [live Render API](https://relay-interruptible-agent-api.onrender.com) |
 
 ## Repository publication gate
 
@@ -25,8 +25,8 @@ Confirmed repository: [`KasarapuRajeev/relay-interruptible-agent`](https://githu
 - [x] Confirm repository name: `relay-interruptible-agent`.
 - [x] Confirm repository visibility: public.
 - [ ] Confirm the final team/member names and college name.
-- [ ] Re-run all automated tests.
-- [ ] Re-run the API-key and credential scan.
+- [x] Re-run all 78 automated tests after production proxy configuration.
+- [x] Re-run the API-key and credential scan; no tracked secret was found.
 - [x] Create the first reviewed commit: `a1bd394`.
 - [x] Create the public GitHub repository without committing any secret.
 - [x] Push the default `main` branch to GitHub.
