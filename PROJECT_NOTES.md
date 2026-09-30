@@ -769,6 +769,8 @@ Continue my trip
 - Created the reviewed initial commit `a1bd394` and pushed the `main` branch to the
   public GitHub repository. The final submission tag remains intentionally pending
   until the presentation and video artifacts are complete.
+- The team confirmed that the presentation is complete. Its file or share link still
+  needs to be added to the repository; the demonstration video remains pending.
 
 ## 14. Documentation rule going forward
 
