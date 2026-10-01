@@ -26,7 +26,7 @@ from .research import search_wikipedia
 
 
 WEB_ROOT = Path(__file__).resolve().parent.parent / "web"
-BUILD_VERSION = "2026.09.30.2"
+BUILD_VERSION = "2026.10.01.1"
 MAX_ACTION_HISTORY = 2_000
 
 

@@ -70,6 +70,10 @@ class WebBoundaryTests(unittest.TestCase):
         status, payload = self.request("GET", "/")
         self.assertEqual(status, 200)
         self.assertIn(b"Interruption impact engine", payload)
+        self.assertIn(b"Ask anything. Interrupt at any time.", payload)
+        self.assertIn(b"Live backend", payload)
+        self.assertNotIn(b"Start Delhi plan", payload)
+        self.assertNotIn(b"Run interruption demo", payload)
 
     def test_valid_message_is_accepted(self):
         body = json.dumps({"text": "Plan a trip"}).encode()

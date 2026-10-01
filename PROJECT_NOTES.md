@@ -823,6 +823,17 @@ Continue my trip
   **Clear display** starts a new backend session instead of only deleting DOM nodes.
 - Added provider-failover, local-fast-path, registry isolation, and eviction regression
   tests. JavaScript syntax validation and all 87 automated Python tests pass.
+- Reoriented the dashboard in build `2026.10.01.1` around a wide, conventional chat
+  surface and a compact live-backend inspector. Execution, context, and history are
+  separated into focused tabs; the active pipeline and current backend action remain
+  visible throughout the conversation.
+- Removed every pre-coded Delhi, Jaipur, study, research, pause, resume, and judge-demo
+  prompt from the UI. Relay now demonstrates behavior exclusively from text the user
+  enters, while tool activity and interruption effects stay in the backend inspector.
+- Collapsed consecutive duplicate timeline events and moved tool/cancellation noise out
+  of the chat transcript. Interruption detection, stale-result rejection, context diffs,
+  branches, evidence, metrics, and model/tool state remain visible without obscuring the
+  assistant conversation.
 
 ## 14. Documentation rule going forward
 

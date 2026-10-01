@@ -4,6 +4,8 @@ const form = document.querySelector("#composer");
 const input = document.querySelector("#input");
 let cursor = 0;
 let relaySessionId = crypto.randomUUID();
+let lastTimelineSignature = "";
+let lastTimelineCount = 0;
 
 function sessionHeaders(extra = {}) {
   return { ...extra, "X-Relay-Session": relaySessionId };
@@ -17,15 +19,63 @@ function addMessage(text, role, final = false) {
   messages.scrollTop = messages.scrollHeight;
 }
 
+function humanize(value = "") {
+  return String(value).replaceAll("_", " ");
+}
+
+function setBackendActivity(text) {
+  document.querySelector("#current-action").textContent = text;
+}
+
+function updatePipeline(status = "idle") {
+  const phases = ["listen", "understand", "execute", "answer"];
+  const activeIndex = {
+    idle: 0,
+    awaiting_clarification: 1,
+    planning: 1,
+    working: 2,
+    executing: 2,
+    complete: 3,
+    cancelled: 3,
+    error: 3,
+  }[status] ?? 1;
+  phases.forEach((phase, index) => {
+    const node = document.querySelector(`#phase-${phase}`);
+    node.classList.toggle("done", index < activeIndex);
+    node.classList.toggle("active", index === activeIndex);
+  });
+}
+
 function updateSnapshot(snapshot = {}) {
-  document.querySelector("#status").textContent = snapshot.status || "idle";
+  const status = snapshot.status || "idle";
+  document.querySelector("#status").textContent = status;
   document.querySelector("#intent").textContent = snapshot.intent || "unknown";
   document.querySelector("#version").textContent = snapshot.version ?? 0;
   document.querySelector("#task").textContent = snapshot.task_id ? snapshot.task_id.slice(0, 8) : "none";
   document.querySelector("#branch").textContent = snapshot.branch_id
     ? `#${snapshot.branch_number} · ${snapshot.branch_id.slice(0, 6)}`
     : "none";
-  document.querySelector("#calls").textContent = (snapshot.active_call_ids || []).length;
+  const activeCalls = (snapshot.active_call_ids || []).length;
+  document.querySelector("#calls").textContent = activeCalls;
+  document.querySelector("#active-calls-badge").textContent = `${activeCalls} ${activeCalls === 1 ? "call" : "calls"}`;
+  const pill = document.querySelector("#status-pill");
+  pill.textContent = humanize(status);
+  pill.className = `status-pill ${status}`;
+  document.querySelector("#backend-title").textContent = {
+    idle: "Ready for a task",
+    awaiting_clarification: "Waiting for clarification",
+    planning: "Understanding your request",
+    working: "Executing the active plan",
+    executing: "Executing the active plan",
+    complete: "Latest task completed",
+    cancelled: "Active work stopped",
+    error: "Backend needs attention",
+  }[status] || "Processing your request";
+  updatePipeline(status);
+  if (status === "idle") setBackendActivity("Waiting for your message");
+  if (status === "complete") setBackendActivity("Response delivered from the active branch");
+  if (status === "awaiting_clarification") setBackendActivity("Waiting for missing information");
+  if (status === "error") setBackendActivity("A backend operation failed safely");
   const indicator = document.querySelector("#work-indicator");
   const interruptible = ["working", "planning", "executing"].includes(snapshot.status);
   indicator.hidden = !interruptible;
@@ -254,7 +304,7 @@ function renderPlanBranches(branches, activeBranchId) {
   if (!branches.length) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "Start a task to see its execution plan.";
+    empty.textContent = "Send any task to see the active execution branch.";
     root.appendChild(empty);
     return;
   }
@@ -299,10 +349,47 @@ function renderPlanBranches(branches, activeBranchId) {
 
 function describe(action) {
   const p = action.payload || {};
-  if (action.type === "tool_call") return `${p.tool_name} · attempt ${p.attempt}`;
-  if (action.type === "cancel_call") return `${p.tool_name} · ${p.reason}`;
+  if (action.type === "tool_call") {
+    const inputs = Object.entries(p.arguments || {}).map(([key, value]) => `${humanize(key)}: ${value}`).join(" · ");
+    return `${humanize(p.tool_name)}${inputs ? ` — ${inputs}` : ""} · attempt ${p.attempt}`;
+  }
+  if (action.type === "cancel_call") return `${humanize(p.tool_name)} · ${humanize(p.reason)}`;
   if (action.type === "trace") return p.name || "trace";
   return p.text || action.type;
+}
+
+function showInterruption(text) {
+  document.querySelector("#interrupt-banner").hidden = false;
+  document.querySelector("#interrupt-summary").textContent = text;
+}
+
+function renderTimelineEvent(action) {
+  const detailText = describe(action);
+  const signature = `${action.type}:${detailText}`;
+  if (signature === lastTimelineSignature && timeline.firstElementChild) {
+    lastTimelineCount += 1;
+    let repeat = timeline.firstElementChild.querySelector(".event-repeat");
+    if (!repeat) {
+      repeat = document.createElement("span");
+      repeat.className = "event-repeat";
+      timeline.firstElementChild.querySelector(".event-name").appendChild(repeat);
+    }
+    repeat.textContent = `×${lastTimelineCount}`;
+    return;
+  }
+  if (timeline.querySelector(".empty")) timeline.replaceChildren();
+  lastTimelineSignature = signature;
+  lastTimelineCount = 1;
+  const event = document.createElement("div");
+  event.className = `event ${action.type}`;
+  const name = document.createElement("div");
+  name.className = "event-name";
+  name.textContent = humanize(action.type);
+  const detail = document.createElement("div");
+  detail.className = "event-detail";
+  detail.textContent = detailText;
+  event.append(name, detail);
+  timeline.prepend(event);
 }
 
 function renderAction(action) {
@@ -317,35 +404,28 @@ function renderAction(action) {
       "system",
     );
   }
-  if (action.type === "tool_call") {
-    addMessage(`Working: ${p.tool_name.replaceAll("_", " ")} (attempt ${p.attempt})`, "system");
-  }
+  if (action.type === "spoken" && p.acknowledgement) setBackendActivity("Understanding the newest instruction");
+  if (action.type === "tool_call") setBackendActivity(`Running ${humanize(p.tool_name)} with the latest context`);
   if (action.type === "cancel_call") {
-    addMessage(`Cancelled outdated work: ${p.tool_name.replaceAll("_", " ")}`, "system");
+    setBackendActivity(`Stopped outdated ${humanize(p.tool_name)} work`);
+    showInterruption(`Cancelled ${humanize(p.tool_name)} because a newer instruction arrived`);
   }
-  if (action.type === "trace" && p.name === "stale_tool_result_dropped") {
-    addMessage("Ignored a late result from the cancelled task.", "system");
-  }
+  if (action.type === "trace" && p.name === "stale_tool_result_dropped") setBackendActivity("Ignored a late result; replacement work continues");
   if (action.type === "trace" && p.name === "reasoning_cancelled") {
-    addMessage("Cancelled outdated reasoning; applying your newest instruction.", "system");
+    setBackendActivity("Cancelled outdated reasoning; applying the newest instruction");
+    showInterruption("Old reasoning stopped; newest message is now authoritative");
   }
   if (action.type === "trace" && p.name === "grounded_results_invalidated") {
-    addMessage("Discarded cached evidence that conflicts with your correction.", "system");
+    setBackendActivity("Removed evidence that conflicts with the correction");
+    showInterruption(`${p.count || "Conflicting"} evidence item(s) invalidated`);
   }
   if (action.type === "trace" && p.name === "parallel_evidence_buffered") {
-    addMessage(`Research source completed; ${p.remaining_calls} parallel searches still running.`, "system");
+    setBackendActivity(`Research evidence accepted; ${p.remaining_calls} parallel searches remain`);
   }
+  if (action.type === "trace" && p.name === "interruption_detected") showInterruption("New message detected while work was active");
+  if (action.type === "final") setBackendActivity(p.local_fast_path ? "Answered through the local fast path" : "Final answer delivered from the active branch");
   if (p.state_snapshot) updateSnapshot(p.state_snapshot);
-  const event = document.createElement("div");
-  event.className = `event ${action.type}`;
-  const name = document.createElement("div");
-  name.className = "event-name";
-  name.textContent = action.type.replaceAll("_", " ");
-  const detail = document.createElement("div");
-  detail.className = "event-detail";
-  detail.textContent = describe(action);
-  event.append(name, detail);
-  timeline.prepend(event);
+  renderTimelineEvent(action);
 }
 
 async function send(text) {
@@ -353,34 +433,48 @@ async function send(text) {
   if (!value) return;
   addMessage(value, "user");
   input.value = "";
-  await fetch("/api/messages", {
-    method: "POST",
-    headers: sessionHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ text: value }),
-  });
+  setBackendActivity("Sending the newest instruction to Relay");
+  try {
+    const response = await fetch("/api/messages", {
+      method: "POST",
+      headers: sessionHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ text: value }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  } catch (error) {
+    addMessage("Relay could not reach the backend. Please retry in a moment.", "assistant");
+    setBackendActivity("Backend connection failed; request was not accepted");
+  }
 }
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   send(input.value);
 });
-document.querySelectorAll("[data-message]").forEach((button) => {
-  button.addEventListener("click", () => send(button.dataset.message));
-});
 document.querySelector("#clear").addEventListener("click", () => {
   relaySessionId = crypto.randomUUID();
   cursor = 0;
   messages.replaceChildren();
+  const intro = document.createElement("div");
+  intro.className = "message assistant intro-message";
+  intro.innerHTML = "<strong>What would you like to accomplish?</strong><span>I’ll keep listening while I reason and use tools. Send a new message while I work to redirect me.</span>";
+  messages.appendChild(intro);
   timeline.replaceChildren();
+  const timelineEmpty = document.createElement("span");
+  timelineEmpty.className = "empty";
+  timelineEmpty.textContent = "No events yet";
+  timeline.appendChild(timelineEmpty);
+  lastTimelineSignature = "";
+  lastTimelineCount = 0;
+  document.querySelector("#interrupt-banner").hidden = true;
   document.querySelector("#event-count").textContent = "0 events";
   loadStatus();
 });
-document.querySelector("#judge-demo").addEventListener("click", async () => {
-  await send("Plan a 3-day trip to Delhi under ₹30,000");
-  window.setTimeout(
-    () => send("Actually change it to Jaipur under ₹20,000"),
-    1200,
-  );
+document.querySelectorAll(".tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+    document.querySelectorAll(".tab-page").forEach((page) => page.classList.toggle("active", page.id === `tab-${button.dataset.tab}`));
+  });
 });
 
 async function poll() {
