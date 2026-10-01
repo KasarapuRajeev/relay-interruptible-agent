@@ -861,6 +861,12 @@ Continue my trip
   electric-blue primary actions, cyan live-state cues, higher-contrast cards, and
   clearer success/cancellation colours. No agent behavior, API route, or UI workflow
   changed in this visual pass.
+- Fixed execution observability in build `2026.10.01.5`. The primary Execution tab
+  now keeps the authoritative user request, active tool/reasoning step, and the five
+  newest backend events visible at all times. Task summaries now carry branch request
+  text and running-step names, so an interruption visibly identifies what was stopped,
+  what replaced it, and what Relay is running now. A local Delhi-to-Jaipur interruption
+  smoke test confirmed all of these states update in one view.
 
 ## 14. Documentation rule going forward
 

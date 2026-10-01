@@ -88,6 +88,9 @@ class OrchestratorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(new_call.payload["arguments"]["duration_days"], 3)
         snapshot = new_call.payload["state_snapshot"]
         self.assertEqual(snapshot["branch_number"], 2)
+        active_task = next(task for task in snapshot["tasks"] if task["active"])
+        self.assertIn("Jaipur", active_task["request_text"])
+        self.assertEqual(active_task["active_step"], "search travel")
         self.assertEqual(
             snapshot["context_diff"]["changed"]["destination"],
             {"old": "Delhi", "new": "Jaipur"},

@@ -10,6 +10,7 @@ let cursor = 0;
 let relaySessionId = crypto.randomUUID();
 let lastTimelineSignature = "";
 let lastTimelineCount = 0;
+let liveFeedEvents = [];
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let voiceRequested = false;
@@ -96,6 +97,7 @@ function updateSnapshot(snapshot = {}) {
   if (status === "complete") setBackendActivity("Response delivered from the active branch");
   if (status === "awaiting_clarification") setBackendActivity("Waiting for missing information");
   if (status === "error") setBackendActivity("A backend operation failed safely");
+  renderActiveTask(snapshot.tasks || [], status);
   const indicator = document.querySelector("#work-indicator");
   const interruptible = ["working", "planning", "executing"].includes(snapshot.status);
   indicator.hidden = !interruptible;
@@ -126,6 +128,31 @@ function updateSnapshot(snapshot = {}) {
   );
   renderMetrics(snapshot.metrics || {});
   renderTasks(snapshot.tasks || []);
+}
+
+function renderActiveTask(tasks, status) {
+  const active = tasks.find((task) => task.active) || tasks[0];
+  const title = document.querySelector("#active-task-title");
+  const request = document.querySelector("#active-task-request");
+  const step = document.querySelector("#active-task-step");
+  const state = document.querySelector("#active-task-status");
+  if (!active) {
+    title.textContent = "Waiting for a request";
+    request.textContent = "Send a message to create the first execution branch.";
+    step.textContent = "No tool or reasoning step is running.";
+    state.textContent = status;
+    return;
+  }
+  title.textContent = humanize(active.intent || "current task");
+  request.textContent = active.request_text || "Current request is being prepared.";
+  step.textContent = active.active_step
+    ? `Running now: ${active.active_step}`
+    : active.status === "complete"
+      ? "Completed. This is the latest authoritative result."
+      : active.status === "cancelled"
+        ? "Cancelled. A newer instruction can replace it."
+        : "Reasoning and tool selection are in progress.";
+  state.textContent = active.active ? "active" : active.status || status;
 }
 
 function renderMemory(history, count, limit) {
@@ -374,8 +401,31 @@ function describe(action) {
     return `${humanize(p.tool_name)}${inputs ? ` — ${inputs}` : ""} · attempt ${p.attempt}`;
   }
   if (action.type === "cancel_call") return `${humanize(p.tool_name)} · ${humanize(p.reason)}`;
-  if (action.type === "trace") return p.name || "trace";
+  if (action.type === "trace") return humanize(p.name || "trace");
   return p.text || action.type;
+}
+
+function renderLiveFeed(action) {
+  const root = document.querySelector("#live-feed");
+  const count = document.querySelector("#live-feed-count");
+  const detail = describe(action);
+  const label = action.type === "trace" ? "system" : humanize(action.type);
+  const event = { label, detail, type: action.type };
+  const previous = liveFeedEvents[0];
+  if (previous && previous.label === event.label && previous.detail === event.detail) return;
+  liveFeedEvents = [event, ...liveFeedEvents].slice(0, 5);
+  root.replaceChildren();
+  count.textContent = `${liveFeedEvents.length} ${liveFeedEvents.length === 1 ? "event" : "events"}`;
+  for (const item of liveFeedEvents) {
+    const row = document.createElement("div");
+    row.className = `live-feed-item ${item.type}`;
+    const name = document.createElement("strong");
+    name.textContent = item.label;
+    const text = document.createElement("span");
+    text.textContent = item.detail;
+    row.append(name, text);
+    root.appendChild(row);
+  }
 }
 
 function showInterruption(text) {
@@ -448,6 +498,7 @@ function renderAction(action) {
   if (action.type === "trace" && p.name === "interruption_detected") showInterruption("New message detected while work was active");
   if (action.type === "final") setBackendActivity(p.local_fast_path ? "Answered through the local fast path" : "Final answer delivered from the active branch");
   if (p.state_snapshot) updateSnapshot(p.state_snapshot);
+  renderLiveFeed(action);
   renderTimelineEvent(action);
 }
 
@@ -593,6 +644,9 @@ document.querySelector("#clear").addEventListener("click", () => {
   timeline.appendChild(timelineEmpty);
   lastTimelineSignature = "";
   lastTimelineCount = 0;
+  liveFeedEvents = [];
+  document.querySelector("#live-feed").innerHTML = '<span class="empty">The next request will stream its backend steps here.</span>';
+  document.querySelector("#live-feed-count").textContent = "0 events";
   document.querySelector("#interrupt-banner").hidden = true;
   document.querySelector("#event-count").textContent = "0 events";
   loadStatus();

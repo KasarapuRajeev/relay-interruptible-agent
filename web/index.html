@@ -84,6 +84,11 @@
                 <div><small>State version</small><strong id="version">0</strong></div>
                 <span id="status" hidden>idle</span><span id="calls" hidden>0</span>
               </div>
+              <div class="section-card current-task-card">
+                <div class="section-title"><div><p class="mini-label">Authoritative task</p><h3 id="active-task-title">Waiting for a request</h3></div><span id="active-task-status">idle</span></div>
+                <p id="active-task-request" class="active-task-request">Send a message to create the first execution branch.</p>
+                <div id="active-task-step" class="active-task-step">No tool or reasoning step is running.</div>
+              </div>
               <div class="section-card">
                 <div class="section-title"><div><p class="mini-label">Live context surgery</p><h3>What changed</h3></div><span id="branch-badge">No branch</span></div>
                 <div id="context-diff" class="context-diff"><span class="empty">No correction yet</span></div>
@@ -91,6 +96,10 @@
               <div class="section-card">
                 <div class="section-title"><div><p class="mini-label">Interruption impact engine</p><h3>Cancel, preserve, or replace</h3></div><span id="impact-count">0 decisions</span></div>
                 <div id="impact-list" class="impact-list"><span class="empty">No interruption analysed yet</span></div>
+              </div>
+              <div class="section-card live-feed-card">
+                <div class="section-title"><div><p class="mini-label">Live backend feed</p><h3>What Relay just did</h3></div><span id="live-feed-count">0 events</span></div>
+                <div id="live-feed" class="live-feed"><span class="empty">The next request will stream its backend steps here.</span></div>
               </div>
               <div class="section-card grow-card">
                 <div class="section-title"><h3>Plan branches</h3><span class="legend-inline"><i class="dot running"></i> live <i class="dot cancelled"></i> stopped <i class="dot completed"></i> kept</span></div>

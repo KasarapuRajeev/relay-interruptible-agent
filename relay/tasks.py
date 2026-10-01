@@ -30,6 +30,10 @@ class TaskRecord:
 
     def summary(self, *, active: bool = False) -> dict[str, Any]:
         branch = self.active_branch()
+        active_step = next(
+            (step for step in reversed(branch.steps) if step.status == "running"),
+            None,
+        ) if branch else None
         return {
             "task_id": self.task_id,
             "intent": self.intent,
@@ -37,6 +41,8 @@ class TaskRecord:
             "active": active,
             "branch_id": branch.branch_id if branch else None,
             "branch_number": branch.number if branch else 0,
+            "request_text": branch.request_text if branch else "",
+            "active_step": active_step.name if active_step else None,
             "slot_count": len(self.slots),
             "evidence_count": len(self.active_grounded_results()),
         }

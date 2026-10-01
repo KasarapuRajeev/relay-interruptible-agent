@@ -1,7 +1,7 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.10.01.4`
+**Build:** `2026.10.01.5`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
@@ -20,6 +20,11 @@ and network availability; it is not represented as completed by this report.
 October 1 visual verification: the chat-first layout, live backend inspector, voice
 control, branch cards, and timeline remained intact after the colour-system refresh.
 The dashboard rendered with the new palette without overlap at the desktop preview.
+
+October 1 execution-visibility smoke test: a running Delhi travel search was
+interrupted with Jaipur under ₹20,000. The execution view showed the authoritative
+replacement request, Branch 2 as active, the old call cancellation, the new running
+tool call, the changed destination/budget, and preserved three-day duration.
 
 ## Automated validation
 
