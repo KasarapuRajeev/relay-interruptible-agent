@@ -127,9 +127,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_gemini.ps1
 
 Gemini is selected before OpenAI when both environment variables are present.
 
-Build `2026.10.01.2` also protects completed tool work from a provider-side synthesis
+Build `2026.10.01.3` also protects completed tool work from a provider-side synthesis
 timeout: Relay shows the accepted weather, calculation, or cited research evidence
 directly and marks that fallback in the conversation.
+
+The chat composer now includes an optional continuous microphone mode in browsers that
+support the Web Speech API. Interim speech is sent as timestamped partial-transcript
+events, while each final recognized phrase enters the same interruption, cancellation,
+and replanning path as typed chat. Raw audio transcription and semantic audio grounding
+are not claimed by this browser-first phase.
 
 Never paste the key into source code or commit it. The dashboard still uses
 deterministic mock domain tools so interruptions can be demonstrated repeatably;

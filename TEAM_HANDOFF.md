@@ -6,8 +6,8 @@
 demo, report, or final submission.
 **Current development status:** Working provider-integrated MVP; approximately 75%
 of the intended hackathon submission is complete.
-**Latest dashboard build:** `2026.10.01.2`
-**Automated verification:** 87 tests passing
+**Latest dashboard build:** `2026.10.01.3`
+**Automated verification:** 89 tests passing
 
 ---
 
@@ -343,7 +343,9 @@ The live Gemini test produced a 35-event timeline and verified:
 - The current invalidation mechanism is slot-based, not yet a full dependency graph.
 - Plan branches are not yet displayed visually.
 - Audio and video events exist in the protocol but are not decoded or grounded.
-- Streaming speech interruption is not yet implemented.
+- Browser speech interruption is implemented with continuous recognition, interim
+  transcript events, and final phrases routed through Relay's normal cancellation path.
+  Raw WAV transcription and semantic audio grounding are not yet implemented.
 - The dashboard uses polling and is not production infrastructure.
 - The evaluation harness needs complete scenario scoring and failure injection.
 - The project is not deployed publicly yet.
@@ -370,7 +372,7 @@ Overall hackathon submission readiness: **approximately 75%**.
 | Live search and citations | 10% |
 | Real domain tools | 25% |
 | Plan dependency graph | 10% |
-| Voice/multimodal behavior | 10–15% |
+| Voice/multimodal behavior | 35% |
 | Evaluation metrics | 35% |
 | Deployment and final pitch | 10% |
 
@@ -609,7 +611,7 @@ http://127.0.0.1:8000
 The provider badge should show:
 
 ```text
-Gemini · 2026.10.01.2
+Gemini · 2026.10.01.3
 ```
 
 Never paste API keys into code, documentation, screenshots, Git commits, or team chat.

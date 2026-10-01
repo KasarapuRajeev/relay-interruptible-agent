@@ -36,11 +36,16 @@
               <span class="pulse-dot"></span>
               <div><strong>Working — still listening</strong><span>Type now to interrupt or redirect this task.</span></div>
             </div>
+            <div id="voice-status" class="voice-status" hidden aria-live="polite">
+              <span class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <div><strong id="voice-label">Listening continuously</strong><span id="voice-preview">Speak naturally. Relay will keep listening while it works.</span></div>
+            </div>
             <form id="composer">
+              <button id="voice" class="voice-button" type="button" aria-label="Start voice input" aria-pressed="false" title="Start voice input">Mic</button>
               <input id="input" autocomplete="off" aria-label="Message Relay" placeholder="Message Relay or interrupt the active task…" />
               <button type="submit" class="send">Send <span>↗</span></button>
             </form>
-            <p class="composer-hint">Enter to send · every message is interpreted live by the backend</p>
+            <p class="composer-hint">Enter to send · microphone streams partial speech into the live backend</p>
           </div>
         </section>
 

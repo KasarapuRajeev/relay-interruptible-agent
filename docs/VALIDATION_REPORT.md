@@ -1,13 +1,13 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.10.01.2`
+**Build:** `2026.10.01.3`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
 ## Executive result
 
-Relay passed all **87 automated tests**. The earlier interruption browser smoke test
+Relay passed all **89 automated tests**. The earlier interruption browser smoke test
 also passed; a Gemini-backed browser recheck of the September 29 conversation-memory
 upgrade requires restarting the currently running older Gemini process.
 No stale or duplicate result entered active evidence, no cancelled branch produced the
@@ -39,6 +39,7 @@ and network availability; it is not represented as completed by this report.
 | HTTP boundary | Pass | Empty/oversized bodies and static path traversal are rejected |
 | Retention | Pass | Timeline is capped at 2,000 actions without breaking its cursor |
 | Session isolation | Pass | Reload and Clear display receive a fresh backend context |
+| Streaming transcripts | Pass | Interim and final browser transcripts preserve the end-of-turn boundary |
 
 Command used:
 
@@ -47,7 +48,15 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python -m unittest discover -s tests -v
 ```
 
-Result: `Ran 87 tests ... OK`.
+Result: `Ran 89 tests ... OK`.
+
+October 1 browser-transcript smoke test:
+
+- Submitted `change the destination to` with `end_of_turn: false`.
+- Confirmed Relay emitted `speculative_intent_started` without creating a user turn.
+- Submitted `change the destination to Jaipur` with `end_of_turn: true`.
+- Confirmed immediate acknowledgement and the normal tool-planning path.
+- Confirmed the browser exposes microphone capability without requiring it for typed chat.
 
 Production smoke test on September 30, 2026:
 

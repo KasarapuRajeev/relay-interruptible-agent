@@ -26,7 +26,7 @@ from .research import search_wikipedia
 
 
 WEB_ROOT = Path(__file__).resolve().parent.parent / "web"
-BUILD_VERSION = "2026.10.01.2"
+BUILD_VERSION = "2026.10.01.3"
 MAX_ACTION_HISTORY = 2_000
 
 
@@ -91,14 +91,17 @@ class RelayWebRuntime:
             self._loop.call_soon_threadsafe(self._loop.stop)
             self._thread.join(timeout=2)
 
-    def submit_text(self, text: str) -> None:
+    def submit_transcript(self, text: str, end_of_turn: bool) -> None:
         event = InputEvent(
             str(uuid.uuid4()),
             EventType.TRANSCRIPT_CHUNK,
             self.agent.clock(),
-            {"text": text, "end_of_turn": True},
+            {"text": text, "end_of_turn": end_of_turn, "source": "browser"},
         )
         asyncio.run_coroutine_threadsafe(self.agent.submit(event), self._loop)
+
+    def submit_text(self, text: str) -> None:
+        self.submit_transcript(text, end_of_turn=True)
 
     def read_actions(self, after: int) -> tuple[list[dict[str, Any]], int]:
         with self._lock:
@@ -309,7 +312,8 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
         self._serve_static(parsed.path)
 
     def do_POST(self) -> None:  # noqa: N802
-        if urlparse(self.path).path != "/api/messages":
+        path = urlparse(self.path).path
+        if path not in {"/api/messages", "/api/transcripts"}:
             self._json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
             return
         try:
@@ -320,11 +324,21 @@ class RelayRequestHandler(BaseHTTPRequestHandler):
             text = str(body.get("text", "")).strip()
             if not text:
                 raise ValueError("Message text is required")
+            end_of_turn = body.get("end_of_turn", True) if path == "/api/transcripts" else True
+            if path == "/api/transcripts" and not isinstance(end_of_turn, bool):
+                raise ValueError("end_of_turn must be a boolean")
         except (ValueError, json.JSONDecodeError) as error:
             self._json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
             return
-        self._runtime().submit_text(text)
-        self._json(HTTPStatus.ACCEPTED, {"accepted": True})
+        runtime = self._runtime()
+        if path == "/api/transcripts":
+            runtime.submit_transcript(text, end_of_turn)
+        else:
+            runtime.submit_text(text)
+        self._json(
+            HTTPStatus.ACCEPTED,
+            {"accepted": True, "end_of_turn": end_of_turn},
+        )
 
     def _serve_static(self, request_path: str) -> None:
         relative = "index.html" if request_path == "/" else request_path.lstrip("/")

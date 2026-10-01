@@ -21,6 +21,7 @@ class _FakeRuntime:
     def __init__(self):
         self.provider = "test"
         self.messages = []
+        self.transcripts = []
 
     def status(self):
         return {
@@ -35,6 +36,9 @@ class _FakeRuntime:
 
     def submit_text(self, text):
         self.messages.append(text)
+
+    def submit_transcript(self, text, end_of_turn):
+        self.transcripts.append((text, end_of_turn))
 
 
 class WebBoundaryTests(unittest.TestCase):
@@ -104,6 +108,33 @@ class WebBoundaryTests(unittest.TestCase):
             {"Content-Type": "application/json", "Content-Length": str(len(body))},
         )
         self.assertEqual(status, 400)
+
+    def test_partial_and_final_voice_transcripts_are_accepted(self):
+        for text, end_of_turn in (("change the trip", False), ("change the trip to Jaipur", True)):
+            body = json.dumps({"text": text, "end_of_turn": end_of_turn}).encode()
+            status, payload = self.request(
+                "POST",
+                "/api/transcripts",
+                body,
+                {"Content-Type": "application/json", "Content-Length": str(len(body))},
+            )
+            self.assertEqual(status, 202)
+            self.assertEqual(json.loads(payload)["end_of_turn"], end_of_turn)
+        self.assertEqual(
+            self.runtime.transcripts[-2:],
+            [("change the trip", False), ("change the trip to Jaipur", True)],
+        )
+
+    def test_voice_transcript_requires_boolean_end_of_turn(self):
+        body = json.dumps({"text": "hello", "end_of_turn": "false"}).encode()
+        status, payload = self.request(
+            "POST",
+            "/api/transcripts",
+            body,
+            {"Content-Type": "application/json", "Content-Length": str(len(body))},
+        )
+        self.assertEqual(status, 400)
+        self.assertIn(b"end_of_turn must be a boolean", payload)
 
     def test_static_path_traversal_is_rejected(self):
         status, _ = self.request("GET", "/../pyproject.toml")

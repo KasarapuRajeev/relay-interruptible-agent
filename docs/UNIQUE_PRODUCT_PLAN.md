@@ -105,8 +105,9 @@ cross-session profiling remains out of scope.
 8. Add measurable latency, cancellation, reuse, and stale-result metrics. **Done for
    the first live dashboard metrics and repeatable interruption demonstration.**
 9. Add streaming transcript input and interrupt while the user is still speaking.
-   **Not done: partial transcripts currently emit an observable trace but do not start
-   real speculative retrieval.**
+   **Browser input done: continuous microphone recognition sends observable interim
+   transcript events and routes final speech through the normal interruption path.
+   Real speculative retrieval from partial speech remains the next step.**
 10. Create deterministic judge scenarios and failure-injection tests. **Core text,
     timing, retry, stale-result, and safety scenarios are automated; official audio
     and visual coverage remains.**

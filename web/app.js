@@ -2,10 +2,19 @@ const messages = document.querySelector("#messages");
 const timeline = document.querySelector("#timeline");
 const form = document.querySelector("#composer");
 const input = document.querySelector("#input");
+const voiceButton = document.querySelector("#voice");
+const voiceStatus = document.querySelector("#voice-status");
+const voiceLabel = document.querySelector("#voice-label");
+const voicePreview = document.querySelector("#voice-preview");
 let cursor = 0;
 let relaySessionId = crypto.randomUUID();
 let lastTimelineSignature = "";
 let lastTimelineCount = 0;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let voiceRequested = false;
+let lastPartial = "";
+let lastPartialSentAt = 0;
 
 function sessionHeaders(extra = {}) {
   return { ...extra, "X-Relay-Session": relaySessionId };
@@ -25,6 +34,17 @@ function humanize(value = "") {
 
 function setBackendActivity(text) {
   document.querySelector("#current-action").textContent = text;
+}
+
+function setVoiceState(active, label = "Listening continuously", preview = "Speak naturally. Relay will keep listening while it works.") {
+  voiceButton.classList.toggle("active", active);
+  voiceButton.setAttribute("aria-pressed", String(active));
+  voiceButton.setAttribute("aria-label", active ? "Stop voice input" : "Start voice input");
+  voiceButton.title = active ? "Stop voice input" : "Start voice input";
+  voiceButton.textContent = active ? "Stop" : "Mic";
+  voiceStatus.hidden = !active && !preview;
+  voiceLabel.textContent = label;
+  voicePreview.textContent = preview;
 }
 
 function updatePipeline(status = "idle") {
@@ -422,6 +442,9 @@ function renderAction(action) {
   if (action.type === "trace" && p.name === "parallel_evidence_buffered") {
     setBackendActivity(`Research evidence accepted; ${p.remaining_calls} parallel searches remain`);
   }
+  if (action.type === "trace" && p.name === "speculative_intent_started") {
+    setBackendActivity(`Listening to partial speech: “${p.partial_text || "…"}”`);
+  }
   if (action.type === "trace" && p.name === "interruption_detected") showInterruption("New message detected while work was active");
   if (action.type === "final") setBackendActivity(p.local_fast_path ? "Answered through the local fast path" : "Final answer delivered from the active branch");
   if (p.state_snapshot) updateSnapshot(p.state_snapshot);
@@ -447,11 +470,115 @@ async function send(text) {
   }
 }
 
+async function sendTranscript(text, endOfTurn) {
+  const value = text.trim();
+  if (!value) return;
+  if (endOfTurn) {
+    addMessage(value, "user");
+    input.value = "";
+    setBackendActivity("Final speech received; applying it to the active plan");
+  }
+  const response = await fetch("/api/transcripts", {
+    method: "POST",
+    headers: sessionHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ text: value, end_of_turn: endOfTurn }),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+}
+
+function configureVoice() {
+  if (!SpeechRecognition) {
+    voiceButton.disabled = true;
+    voiceButton.title = "Voice recognition is not supported in this browser";
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = navigator.language || "en-IN";
+
+  recognition.onstart = () => {
+    setVoiceState(true);
+    setBackendActivity("Microphone active; partial speech will enter the event queue");
+  };
+  recognition.onresult = (event) => {
+    let interim = "";
+    const finalParts = [];
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const phrase = event.results[index][0]?.transcript?.trim();
+      if (!phrase) continue;
+      if (event.results[index].isFinal) finalParts.push(phrase);
+      else interim += `${phrase} `;
+    }
+    const partial = interim.trim();
+    if (partial) {
+      voicePreview.textContent = partial;
+      const now = Date.now();
+      if (partial !== lastPartial && now - lastPartialSentAt >= 180) {
+        lastPartial = partial;
+        lastPartialSentAt = now;
+        sendTranscript(partial, false).catch(() => {
+          setVoiceState(true, "Voice connection interrupted", "The partial transcript could not reach Relay.");
+        });
+      }
+    }
+    if (finalParts.length) {
+      const finalText = finalParts.join(" ");
+      lastPartial = "";
+      voicePreview.textContent = "Final speech sent. Keep speaking to interrupt again.";
+      sendTranscript(finalText, true).catch(() => {
+        addMessage("Relay could not accept the voice transcript. Please retry or type the message.", "system");
+      });
+    }
+  };
+  recognition.onerror = (event) => {
+    const denied = ["not-allowed", "service-not-allowed"].includes(event.error);
+    if (denied) voiceRequested = false;
+    const message = denied
+      ? "Microphone permission was not granted. You can continue typing."
+      : `Voice recognition paused (${humanize(event.error)}).`;
+    setVoiceState(false, "Voice input unavailable", message);
+  };
+  recognition.onend = () => {
+    if (voiceRequested) {
+      try {
+        recognition.start();
+      } catch (error) {
+        setTimeout(() => voiceRequested && recognition.start(), 300);
+      }
+      return;
+    }
+    setVoiceState(false, "Voice input stopped", "Press Mic whenever you want Relay to listen continuously.");
+  };
+}
+
+function stopVoice() {
+  voiceRequested = false;
+  if (recognition) recognition.stop();
+}
+
+voiceButton.addEventListener("click", () => {
+  if (!recognition) return;
+  if (voiceRequested) {
+    stopVoice();
+    return;
+  }
+  voiceRequested = true;
+  setVoiceState(true, "Starting microphone", "Your browser may ask for microphone permission.");
+  try {
+    recognition.start();
+  } catch (error) {
+    voiceRequested = false;
+    setVoiceState(false, "Voice input unavailable", "The microphone could not be started. You can continue typing.");
+  }
+});
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   send(input.value);
 });
 document.querySelector("#clear").addEventListener("click", () => {
+  stopVoice();
   relaySessionId = crypto.randomUUID();
   cursor = 0;
   messages.replaceChildren();
@@ -506,4 +633,5 @@ function loadStatus() {
 }
 
 loadStatus();
+configureVoice();
 poll();

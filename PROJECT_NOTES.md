@@ -217,6 +217,9 @@ harness. UI work will not be allowed to change core orchestration behavior.
 - Read-only evidence is selectively preserved by the semantic impact engine; a full
   graph scheduler that skips already-completed tool steps is still future work.
 - Audio and image events are acknowledged/buffered but not decoded or grounded.
+- Continuous browser speech recognition now sends interim and final transcripts, but
+  partial speech does not yet launch cancellable speculative retrieval. Raw WAV
+  transcription remains part of the multimodal phase.
 - The virtual-clock harness needs complete scheduling, fault injection, and scoring.
 - The local dashboard is an MVP, not production UI; it uses polling and has no authentication.
 - Cancelling a Relay model task suppresses its result immediately, but the standard-library
@@ -261,6 +264,7 @@ Tests cover:
 - Weather and calculation intent/argument extraction.
 - Exact research replacement from cars to scooters while work is active.
 - Grounded final delivery when provider synthesis times out after tool completion.
+- Browser transcript API validation for both interim and final speech boundaries.
 
 Run the exact test count before relying on any number written in this document.
 
@@ -308,6 +312,7 @@ Continue my trip
 
 ### Then: multimodal grounding
 
+- Start real speculative retrieval from stable partial-speech hypotheses.
 - Add transcription adapter for WAV inputs.
 - Add vision adapter for PNG frames.
 - Process both behind immediate conversational acknowledgement.
@@ -842,6 +847,15 @@ Continue my trip
   session slots, schema-driven tools, idempotency, state snapshots, and test harness are
   implemented. True partial-utterance speculative retrieval and semantic audio/video
   grounding remain incomplete and are the highest-priority technical gaps.
+- Added browser-first continuous voice interruption in build `2026.10.01.3`. The Mic
+  control uses supported browser speech recognition, sends throttled interim phrases
+  to `/api/transcripts` with `end_of_turn: false`, and sends final recognized phrases
+  through Relay's authoritative interruption path. The UI displays live listening state
+  and partial-speech backend activity while typed chat remains fully available.
+- Added strict transcript-boundary validation and two HTTP regression tests. JavaScript
+  syntax validation and all 89 Python tests pass. A local integration smoke test
+  confirmed the partial `speculative_intent_started` trace followed by acknowledgement
+  and planning only after the final phrase.
 
 ## 14. Documentation rule going forward
 
