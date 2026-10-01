@@ -136,11 +136,13 @@ function renderActiveTask(tasks, status) {
   const request = document.querySelector("#active-task-request");
   const step = document.querySelector("#active-task-step");
   const state = document.querySelector("#active-task-status");
+  const headerRequest = document.querySelector("#current-request");
   if (!active) {
     title.textContent = "Waiting for a request";
     request.textContent = "Send a message to create the first execution branch.";
     step.textContent = "No tool or reasoning step is running.";
     state.textContent = status;
+    headerRequest.textContent = "No active request";
     return;
   }
   title.textContent = humanize(active.intent || "current task");
@@ -153,6 +155,7 @@ function renderActiveTask(tasks, status) {
         ? "Cancelled. A newer instruction can replace it."
         : "Reasoning and tool selection are in progress.";
   state.textContent = active.active ? "active" : active.status || status;
+  headerRequest.textContent = active.request_text || "Current request is being prepared.";
 }
 
 function renderMemory(history, count, limit) {
@@ -550,7 +553,6 @@ function configureVoice() {
 
   recognition.onstart = () => {
     setVoiceState(true);
-    setBackendActivity("Microphone active; partial speech will enter the event queue");
   };
   recognition.onresult = (event) => {
     let interim = "";

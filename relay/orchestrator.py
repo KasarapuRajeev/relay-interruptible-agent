@@ -10,7 +10,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .intent import IntentUpdate, understand
-from .models import ModelAdapter, ModelContext
+from .models import DeterministicModelAdapter, ModelAdapter, ModelContext
 from .metrics import RuntimeMetrics
 from .protocol import Action, ActionType, EventType, InputEvent, StateSnapshot
 from .security import sanitize_error
@@ -502,6 +502,46 @@ class RelayAgent:
                     state_snapshot=self.snapshot.to_dict(),
                 )
                 return
+            status_code = getattr(error, "status_code", None)
+            can_fallback_locally = (
+                status_code in {429, 503}
+                and self.snapshot.intent
+                in {
+                    "travel_planning",
+                    "study_planning",
+                    "research",
+                    "weather_information",
+                    "calculation",
+                }
+            )
+            if can_fallback_locally:
+                local_context = ModelContext(
+                    task_id=self.snapshot.task_id or "unassigned",
+                    intent=self.snapshot.intent,
+                    slots=dict(self.snapshot.slots),
+                    available_tools=[
+                        {
+                            "name": definition.name,
+                            "description": definition.description,
+                            "parameters": definition.parameters,
+                            "state_modifying": definition.state_modifying,
+                        }
+                        for definition in self.tools.definitions.values()
+                    ],
+                    request_text=self._latest_request_text,
+                )
+                local_decision = await DeterministicModelAdapter().decide(local_context)
+                tool_name = local_decision.tool_name or ""
+                if local_decision.kind == "tool_call" and tool_name in self.tools.definitions:
+                    await self._emit(
+                        ActionType.TRACE,
+                        name="provider_overload_local_fallback",
+                        provider_status_code=status_code,
+                        selected_tool=tool_name,
+                        state_snapshot=self.snapshot.to_dict(),
+                    )
+                    await self._start_tool_call(tool_name, local_decision.arguments)
+                    return
             self.snapshot.status = "error"
             user_message = getattr(
                 error,

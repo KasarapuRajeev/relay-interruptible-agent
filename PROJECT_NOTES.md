@@ -867,6 +867,13 @@ Continue my trip
   text and running-step names, so an interruption visibly identifies what was stopped,
   what replaced it, and what Relay is running now. A local Delhi-to-Jaipur interruption
   smoke test confirmed all of these states update in one view.
+- Fixed two issues surfaced by the live Gemini dashboard in build `2026.10.01.6`.
+  The persistent backend header now includes the active request, so it remains visible
+  even when the inspector is scrolled to older branches. Microphone status no longer
+  overwrites the actual backend action. After Gemini exhausts 429/503 retries, supported
+  read-only tasks now emit a visible local-fallback trace and continue through the
+  deterministic tool selector rather than ending in a provider error. Authentication,
+  configuration, and unsafe/state-changing failures still remain explicit errors.
 
 ## 14. Documentation rule going forward
 

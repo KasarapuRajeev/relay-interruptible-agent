@@ -1,13 +1,13 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.10.01.5`
+**Build:** `2026.10.01.6`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
 ## Executive result
 
-Relay passed all **89 automated tests**. The earlier interruption browser smoke test
+Relay passed all **90 automated tests**. The earlier interruption browser smoke test
 also passed; a Gemini-backed browser recheck of the September 29 conversation-memory
 upgrade requires restarting the currently running older Gemini process.
 No stale or duplicate result entered active evidence, no cancelled branch produced the
@@ -43,6 +43,7 @@ tool call, the changed destination/budget, and preserved three-day duration.
 | Multi-task isolation | Pass | Travel and study checkpoints do not share evidence |
 | Tool safety | Pass | Schema validation, bounded retry, timeout, and idempotency pass |
 | Provider adapters | Pass (mocked) | OpenAI/Gemini structured parsing, 503 model failover, and safe error mapping pass |
+| Provider overload continuity | Pass | Supported tasks fall back to deterministic tool selection after exhausted 429/503 retries |
 | Research connector | Pass (mocked) | Canonical citation parsing and empty-result failure pass |
 | Secret handling | Pass | Credential-shaped secrets are redacted and errors are bounded |
 | HTTP boundary | Pass | Empty/oversized bodies and static path traversal are rejected |
@@ -57,7 +58,7 @@ $python = "C:\Users\rajee\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python -m unittest discover -s tests -v
 ```
 
-Result: `Ran 89 tests ... OK`.
+Result: `Ran 90 tests ... OK`.
 
 October 1 browser-transcript smoke test:
 

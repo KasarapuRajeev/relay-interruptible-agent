@@ -385,6 +385,29 @@ class ToolLifecycleTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await agent.close()
 
+    async def test_provider_overload_uses_local_tool_selection_for_supported_task(self):
+        class OverloadedProvider:
+            async def decide(self, context):
+                error = RuntimeError("provider overloaded")
+                error.status_code = 503
+                raise error
+
+        agent = RelayAgent(model=OverloadedProvider())
+        agent.tools.load_manifest(TOOLS)
+        await agent.start()
+        try:
+            await agent.submit(event("Plan a trip to Delhi"))
+            await agent.next_action()  # acknowledgement
+            fallback = await agent.next_action()
+            tool_call = await agent.next_action()
+            self.assertEqual(fallback.type, ActionType.TRACE)
+            self.assertEqual(fallback.payload["name"], "provider_overload_local_fallback")
+            self.assertEqual(tool_call.type, ActionType.TOOL_CALL)
+            self.assertEqual(tool_call.payload["tool_name"], "search_travel")
+            self.assertEqual(tool_call.payload["arguments"]["destination"], "Delhi")
+        finally:
+            await agent.close()
+
     async def test_general_conversation_history_is_sent_to_the_model_and_visible(self):
         class CapturingModel:
             def __init__(self):

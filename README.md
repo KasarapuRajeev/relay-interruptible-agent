@@ -127,7 +127,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_gemini.ps1
 
 Gemini is selected before OpenAI when both environment variables are present.
 
-Build `2026.10.01.5` also protects completed tool work from a provider-side synthesis
+Build `2026.10.01.6` also protects completed tool work from a provider-side synthesis
 timeout: Relay shows the accepted weather, calculation, or cited research evidence
 directly and marks that fallback in the conversation.
 
