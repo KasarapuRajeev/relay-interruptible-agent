@@ -856,6 +856,11 @@ Continue my trip
   syntax validation and all 89 Python tests pass. A local integration smoke test
   confirmed the partial `speculative_intent_started` trace followed by acknowledgement
   and planning only after the final phrase.
+- Refined the dashboard visual system in build `2026.10.01.4` while preserving the
+  chat-first two-column interaction model. The updated palette uses deep navy surfaces,
+  electric-blue primary actions, cyan live-state cues, higher-contrast cards, and
+  clearer success/cancellation colours. No agent behavior, API route, or UI workflow
+  changed in this visual pass.
 
 ## 14. Documentation rule going forward
 

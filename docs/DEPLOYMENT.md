@@ -30,7 +30,7 @@ Render Python service
 Production backend: [relay-interruptible-agent-api.onrender.com](https://relay-interruptible-agent-api.onrender.com)
 
 Verified on September 30, 2026: `GET /api/status` returned HTTP 200 with the
-Gemini provider and build `2026.10.01.3`.
+Gemini provider and build `2026.10.01.4`.
 
 The process binds to Render's `PORT` on `0.0.0.0`. The local workflow remains
 unchanged because it defaults to `127.0.0.1:8000`.
@@ -74,7 +74,7 @@ and completed the calculator smoke test with grounded evidence.
 ## 4. Production checks
 
 1. Confirm the Vercel URL loads the Relay dashboard.
-2. Confirm the provider badge reports Gemini and build `2026.10.01.3`.
+2. Confirm the provider badge reports Gemini and build `2026.10.01.4`.
 3. Run the Delhi-to-Jaipur interruption scenario.
 4. Confirm the old call is cancelled and no late Delhi result enters Jaipur.
 5. Test weather, calculation, and cited research.

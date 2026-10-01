@@ -1,7 +1,7 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.10.01.3`
+**Build:** `2026.10.01.4`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 
@@ -16,6 +16,10 @@ final answer, and no tested tool error exposed a credential-shaped secret.
 The build is suitable for continued feature development and hackathon demonstrations.
 Live paid-provider verification remains conditional on a valid private API key, quota,
 and network availability; it is not represented as completed by this report.
+
+October 1 visual verification: the chat-first layout, live backend inspector, voice
+control, branch cards, and timeline remained intact after the colour-system refresh.
+The dashboard rendered with the new palette without overlap at the desktop preview.
 
 ## Automated validation
 
