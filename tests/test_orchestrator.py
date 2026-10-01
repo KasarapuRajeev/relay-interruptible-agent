@@ -69,6 +69,27 @@ class OrchestratorTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await agent.close()
 
+    async def test_completed_task_is_current_but_not_reported_as_active(self):
+        await self.agent.submit(event("Plan a trip to Delhi"))
+        await self.agent.next_action()
+        call = await self.agent.next_action()
+        await self.agent.submit(
+            InputEvent(
+                str(uuid.uuid4()),
+                EventType.TOOL_RESULT,
+                10,
+                {
+                    "call_id": call.payload["call_id"],
+                    "result": {"summary": "Delhi result", "destination": "Delhi"},
+                },
+            )
+        )
+        final = await self.agent.next_action()
+        task = final.payload["state_snapshot"]["tasks"][0]
+        self.assertTrue(task["current"])
+        self.assertFalse(task["active"])
+        self.assertEqual(task["status"], "complete")
+
     async def test_correction_cancels_old_call_and_updates_only_changed_slot(self):
         await self.agent.submit(event("Plan a 3-day trip to Delhi under ₹30,000"))
         await self.agent.next_action()

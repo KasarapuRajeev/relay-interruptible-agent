@@ -131,7 +131,7 @@ function updateSnapshot(snapshot = {}) {
 }
 
 function renderActiveTask(tasks, status) {
-  const active = tasks.find((task) => task.active) || tasks[0];
+  const active = tasks.find((task) => task.current) || tasks.find((task) => task.active) || tasks[0];
   const title = document.querySelector("#active-task-title");
   const request = document.querySelector("#active-task-request");
   const step = document.querySelector("#active-task-step");
@@ -154,7 +154,7 @@ function renderActiveTask(tasks, status) {
       : active.status === "cancelled"
         ? "Cancelled. A newer instruction can replace it."
         : "Reasoning and tool selection are in progress.";
-  state.textContent = active.active ? "active" : active.status || status;
+  state.textContent = active.status || status;
   headerRequest.textContent = active.request_text || "Current request is being prepared.";
 }
 
@@ -264,7 +264,7 @@ function renderTasks(tasks) {
   };
   for (const task of tasks) {
     const item = document.createElement("div");
-    item.className = `task-item ${task.status}${task.active ? " active" : ""}`;
+    item.className = `task-item ${task.status}${task.current ? " current" : ""}${task.active ? " active" : ""}`;
     const identity = document.createElement("div");
     const name = document.createElement("strong");
     name.textContent = task.intent.replaceAll("_", " ");
@@ -272,7 +272,7 @@ function renderTasks(tasks) {
     meta.textContent = `Branch ${task.branch_number} · ${task.evidence_count} evidence`;
     identity.append(name, meta);
     const state = document.createElement("small");
-    state.textContent = task.active ? "active" : task.status;
+    state.textContent = task.status;
     item.append(identity, state);
     if (task.status === "paused" && resumePrompts[task.intent]) {
       const resume = document.createElement("button");

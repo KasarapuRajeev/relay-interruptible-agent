@@ -874,6 +874,10 @@ Continue my trip
   read-only tasks now emit a visible local-fallback trace and continue through the
   deterministic tool selector rather than ending in a provider error. Authentication,
   configuration, and unsafe/state-changing failures still remain explicit errors.
+- Corrected current-versus-active task semantics in build `2026.10.02.1`. A completed
+  task remains the current session context so a later correction can safely fork a new
+  branch, but the dashboard now labels its Session Task as `COMPLETE`, not `ACTIVE`.
+  Added regression coverage for this distinction; the full suite has 91 passing tests.
 
 ## 14. Documentation rule going forward
 

@@ -28,7 +28,7 @@ class TaskRecord:
             None,
         )
 
-    def summary(self, *, active: bool = False) -> dict[str, Any]:
+    def summary(self, *, current: bool = False) -> dict[str, Any]:
         branch = self.active_branch()
         active_step = next(
             (step for step in reversed(branch.steps) if step.status == "running"),
@@ -38,7 +38,8 @@ class TaskRecord:
             "task_id": self.task_id,
             "intent": self.intent,
             "status": self.status,
-            "active": active,
+            "current": current,
+            "active": current and self.status == "working",
             "branch_id": branch.branch_id if branch else None,
             "branch_number": branch.number if branch else 0,
             "request_text": branch.request_text if branch else "",
@@ -238,6 +239,6 @@ class TaskManager:
 
     def summaries(self) -> list[dict[str, Any]]:
         return [
-            task.summary(active=task.task_id == self.active_task_id)
+            task.summary(current=task.task_id == self.active_task_id)
             for task in reversed(list(self.tasks.values()))
         ]
