@@ -1,7 +1,7 @@
 # Relay Validation Report
 
 **Date:** September 29, 2026
-**Build:** `2026.10.01.1`
+**Build:** `2026.10.01.2`
 **Scope:** Core runtime, interruptions, evidence, tools, providers, HTTP boundary,
 security, dashboard behavior, and responsive layout.
 

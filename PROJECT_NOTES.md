@@ -834,6 +834,14 @@ Continue my trip
   of the chat transcript. Interruption detection, stale-result rejection, context diffs,
   branches, evidence, metrics, and model/tool state remain visible without obscuring the
   assistant conversation.
+- Fixed compact-height inspector overlap in build `2026.10.01.2`. Flex cards can no
+  longer shrink below their scrollable branch content, each card clips its own painting,
+  and the outer tab surface owns vertical overflow on smaller laptop viewports.
+- Audited the implementation against all three pages of the official Theme 5 v1.0.0
+  guide. The event/action protocol, fast/slow coordination, cancellation actions,
+  session slots, schema-driven tools, idempotency, state snapshots, and test harness are
+  implemented. True partial-utterance speculative retrieval and semantic audio/video
+  grounding remain incomplete and are the highest-priority technical gaps.
 
 ## 14. Documentation rule going forward
 

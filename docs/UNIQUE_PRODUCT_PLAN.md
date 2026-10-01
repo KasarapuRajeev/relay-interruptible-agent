@@ -26,7 +26,7 @@ audit history. It is never included in the active reasoning context or final ans
 Normal user/assistant interaction, including immediate acknowledgements and final
 answers.
 
-### Center: Live Plan Graph
+### Right-side execution inspector
 
 - Current goal and constraints.
 - Plan steps with states: queued, running, preserved, cancelled, complete.
@@ -35,7 +35,11 @@ answers.
 - Green links for reusable evidence.
 - A context-diff card for each correction.
 
-### Right: Agent Inspector
+The inspector uses focused Execution, Context, and History tabs instead of several
+simultaneously scrolling columns. The pipeline header remains visible while each tab
+shows one level of detail.
+
+### Agent Inspector contents
 
 - Active task and branch ID.
 - Current context supplied to the model.
@@ -90,8 +94,9 @@ cross-session profiling remains out of scope.
 4. Add selective invalidation and preservation. **Foundational preservation is done;
    tool-result evidence dependency filtering is now done; multi-step graph traversal
    remains.**
-5. Build the live plan-graph UI with strike-through transitions. **First working
-   three-panel version is done; richer graph edges and animations remain.**
+5. Build the live plan-graph UI with strike-through transitions. **The chat-first,
+   two-column interface is done; execution, context, and history are separated into
+   tabs. Richer graph edges and replay animations remain.**
 6. Add a real search connector with citations and parallel evidence gathering.
    **First working version done with three parallel MediaWiki searches; broader web
    and commercial/product data connectors remain.**
@@ -100,7 +105,27 @@ cross-session profiling remains out of scope.
 8. Add measurable latency, cancellation, reuse, and stale-result metrics. **Done for
    the first live dashboard metrics and repeatable interruption demonstration.**
 9. Add streaming transcript input and interrupt while the user is still speaking.
-10. Create deterministic judge scenarios and failure-injection tests.
+   **Not done: partial transcripts currently emit an observable trace but do not start
+   real speculative retrieval.**
+10. Create deterministic judge scenarios and failure-injection tests. **Core text,
+    timing, retry, stale-result, and safety scenarios are automated; official audio
+    and visual coverage remains.**
+
+## Recommended winning addition: Interruption Replay Lab
+
+Do not make decorative 3D the core feature. The scoring guide primarily rewards task
+completion, interruption recovery, latency, and protocol safety. The highest-value
+visual differentiator is a replayable execution graph driven by real trace data:
+
+- scrub through the unified event timeline;
+- animate the old branch turning red when it is cancelled;
+- show valid evidence flowing into the replacement branch in green;
+- display cancellation latency and acknowledgement latency at the exact events;
+- replay late tool results being rejected;
+- export the trace as the evidence judges can inspect.
+
+A subtle 2.5D depth treatment can make this graph attractive, but a WebGL 3D scene
+should wait until streaming audio, frame grounding, and evaluator scenarios pass.
 
 The semantic Interruption Impact Engine foundation is now implemented. It combines
 exact dependency matches, concept aliases, changed-value overlap, confidence scores,
